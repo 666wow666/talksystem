@@ -1,0 +1,179 @@
+.main-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 10;
+}
+
+.header-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-tools-left {
+    flex: 1;
+    justify-content: flex-start;
+    padding-left: 30px;
+}
+
+.header-tools-right {
+    flex: 1;
+    justify-content: flex-end;
+    padding-right: 30px;
+}
+
+.header-record-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(59,130,246,0.3);
+}
+
+.header-record-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 25px rgba(59,130,246,0.4);
+}
+
+.header-record-btn .mic-icon {
+    width: 22px;
+    height: 22px;
+}
+
+.header-record-btn.recording {
+    background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+    animation: pulse-record 1.5s infinite;
+}
+
+.header-record-btn.recording .mic-icon {
+    display: none;
+}
+
+.header-record-btn.recording .recording-dots {
+    display: flex;
+}
+
+.header-record-btn .recording-dots {
+    display: none;
+}
+
+.header-action-btn {
+    padding: 8px 14px;
+    border-radius: 12px;
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.header-action-btn:hover {
+    transform: translateY(-2px);
+}
+
+.header-action-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+    box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+}
+
+.header-action-primary:hover {
+    box-shadow: 0 6px 20px rgba(59,130,246,0.4);
+}
+
+.header-action-success {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+}
+
+.header-action-success:hover {
+    box-shadow: 0 6px 20px rgba(16,185,129,0.4);
+}
+
+.header-action-secondary {
+    background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+    box-shadow: 0 4px 12px rgba(139,92,246,0.3);
+}
+
+.header-action-secondary:hover {
+    box-shadow: 0 6px 20px rgba(139,92,246,0.4);
+}
+
+.header-action-info {
+    background: linear-gradient(135deg, #0ea5e9 0%, #38bdf8 100%);
+    box-shadow: 0 4px 12px rgba(14,165,233,0.3);
+}
+
+.header-action-info:hover {
+    box-shadow: 0 6px 20px rgba(14,165,233,0.4);
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+}
+
+.title-animate {
+    animation: titleFadeIn 0.8s ease-out forwards;
+    opacity: 0;
+}
+
+@keyframes titleFadeIn {
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.title-wrapper {
+    position: relative;
+    text-align: center;
+}
+
+.title-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 12px;
+    border-radius: 20px;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.3);
+}
+
+.title-text {
+    font-size: 42px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 6px;
+    position: relative;
+    font-family: 'Orbitron', 'Rajdhani', sans-serif;
+    text-shadow: 0 2px 20px rgba(59,130,246,0.2);
+}
+
+.title-sub {
+    font-size: 12px;
+    color: #64748b;
+    letter-spacing: 4px;
+    margin-top: 4px;
+    font-weight: 500;
+}

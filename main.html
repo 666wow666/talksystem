@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>云讯智警</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="public/js/anime.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="public/css/base.css">
+    <link rel="stylesheet" href="public/css/toolbar.css">
+    <link rel="stylesheet" href="public/css/buttons.css">
+    <link rel="stylesheet" href="public/css/recording.css">
+    <link rel="stylesheet" href="public/css/result.css">
+    <link rel="stylesheet" href="public/css/chat.css">
+    <link rel="stylesheet" href="public/css/panel.css">
+    <link rel="stylesheet" href="public/css/workflow.css">
+    <link rel="stylesheet" href="public/css/record.css">
+    <link rel="stylesheet" href="public/css/history.css">
+    <link rel="stylesheet" href="public/css/export.css">
+    <link rel="stylesheet" href="public/css/modal.css">
+    <link rel="stylesheet" href="public/css/header.css">
+    <link rel="stylesheet" href="public/css/data-collect.css">
+    <link rel="stylesheet" href="public/css/fullscreen.css">
+</head>
+<body class="p-4 md:p-6 pb-10">
+    <div class="bg-grid"></div>
+
+    <header class="main-header">
+        <div class="header-tools header-tools-left">
+            <button id="btn_control" class="header-record-btn" aria-label="开始录音">
+                <svg id="mic-icon" class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                    <line x1="12" y1="19" x2="12" y2="23"></line>
+                    <line x1="8" y1="23" x2="16" y2="23"></line>
+                </svg>
+                <div id="recording-dots" class="recording-dots">
+                    <span></span><span></span><span></span>
+                </div>
+            </button>
+        </div>
+
+        <div class="header-title title-animate">
+            <div class="title-wrapper">
+                <h1 class="title-text">云讯智警</h1>
+                <div class="title-sub">智能审讯平台</div>
+            </div>
+        </div>
+
+        <div class="header-tools header-tools-right">
+            <button id="generate-record-btn" class="header-action-btn header-action-primary" title="生成笔录">
+                生成笔录
+            </button>
+            <button id="export-record-btn" class="header-action-btn header-action-success" title="导出.doc">
+                导出笔录
+            </button>
+            <button id="export-result-btn" class="header-action-btn header-action-secondary" title="导出录音">
+                导出录音
+            </button>
+            <button id="basic-info-btn" class="header-action-btn header-action-info" title="基本信息">
+                基本信息
+            </button>
+        </div>
+    </header>
+
+    <div class="main-container flex gap-4 max-w-7xl mx-auto">
+        <div class="left-panel w-1/2">
+            <div class="panel h-full flex flex-col panel-animate" style="min-height: 850px; animation-delay: 0.05s;">
+                <div class="panel-header panel-header-purple">
+                    <i class="fas fa-scroll mr-2"></i>笔录
+                    <button class="fullscreen-btn" onclick="openWorkflow2Fullscreen()" title="放大">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+                <div class="panel-body flex flex-col h-full">
+                    <div class="record-wrapper">
+                        <div class="record-toolbar">
+                            <button class="toolbar-btn" onclick="formatDoc('bold')" title="加粗">
+                                <i class="fas fa-bold"></i>
+                            </button>
+                            <button class="toolbar-btn" onclick="formatDoc('italic')" title="斜体">
+                                <i class="fas fa-italic"></i>
+                            </button>
+                            <button class="toolbar-btn" onclick="formatDoc('underline')" title="下划线">
+                                <i class="fas fa-underline"></i>
+                            </button>
+                            <div style="width: 1px; height: 24px; background: #e2e8f0; margin: 0 8px;"></div>
+                            <span class="text-sm text-gray-600 font-bold mr-2">字号</span>
+                            <select class="toolbar-select" onchange="formatDoc('fontSize', this.value); this.value='';">
+                                <option value="">选择</option>
+                                <option value="1">10px</option>
+                                <option value="2">12px</option>
+                                <option value="3">14px</option>
+                                <option value="4">16px</option>
+                                <option value="5">18px</option>
+                                <option value="6">20px</option>
+                                <option value="7">24px</option>
+                                <option value="8">28px</option>
+                            </select>
+                            <div style="width: 1px; height: 24px; background: #e2e8f0; margin: 0 8px;"></div>
+                            <span class="text-sm text-gray-600 font-bold mr-2">字体</span>
+                            <select class="toolbar-select" onchange="formatDoc('fontName', this.value); this.value='';">
+                                <option value="">选择</option>
+                                <option value="仿宋">仿宋</option>
+                                <option value="宋体">宋体</option>
+                                <option value="黑体">黑体</option>
+                                <option value="微软雅黑">微软雅黑</option>
+                            </select>
+                            <div style="width: 1px; height: 24px; background: #e2e8f0; margin: 0 8px;"></div>
+                            <button class="toolbar-btn" onclick="formatDoc('justifyLeft')" title="左对齐">
+                                <i class="fas fa-align-left"></i>
+                            </button>
+                            <button class="toolbar-btn" onclick="formatDoc('justifyCenter')" title="居中">
+                                <i class="fas fa-align-center"></i>
+                            </button>
+                            <button class="toolbar-btn" onclick="formatDoc('justifyRight')" title="右对齐">
+                                <i class="fas fa-align-right"></i>
+                            </button>
+                        </div>
+                        <div id="record-output" class="record-output" contenteditable="true">
+                            <div class="record-placeholder">
+                                <i class="fas fa-file-alt"></i>
+                                <span>请在此输入</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-panel w-1/2 flex flex-col gap-4">
+            <div class="panel flex-1 panel-animate workflow1-panel" style="animation-delay: 0.1s;">
+                <div class="panel-header panel-header-green">
+                    <i class="fas fa-question-circle mr-2"></i>问题推荐
+                    <button id="history-btn" class="header-history-btn" title="历史记录" onclick="openHistoryPanel()">
+                        <i class="fas fa-history"></i>
+                    </button>
+                </div>
+                <div id="workflow1-content">
+                    <div class="panel-body pb-3 h-full" style="display: flex; flex-direction: column;">
+                        <div class="workflow1-outputs-vertical">
+                            <div class="workflow-output-simple" id="workflow1-q1">
+                                <div class="workflow-output-content" id="workflow1-q1-content"></div>
+                            </div>
+                            <div class="workflow-output-simple" id="workflow1-q2">
+                                <div class="workflow-output-content" id="workflow1-q2-content"></div>
+                            </div>
+                            <div class="workflow-output-simple" id="workflow1-q3">
+                                <div class="workflow-output-content" id="workflow1-q3-content"></div>
+                            </div>
+                            <div class="workflow-output-simple" id="workflow1-q4">
+                                <div class="workflow-output-content" id="workflow1-q4-content"></div>
+                            </div>
+                            <div class="workflow-output-simple" id="workflow1-q5">
+                                <div class="workflow-output-content" id="workflow1-q5-content"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="history-panel" id="historyPanel">
+                <div class="history-panel-header">
+                    <h3><i class="fas fa-history"></i> 历史记录</h3>
+                    <button id="close-history" class="history-close-btn" onclick="closeHistoryPanel()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="history-list" id="historyList">
+                    <div class="history-empty">
+                        <i class="fas fa-inbox"></i>
+                        <p>暂无历史记录</p>
+                    </div>
+                </div>
+            </div>
+            <div class="history-overlay" id="historyOverlay" onclick="closeHistoryPanel()"></div>
+
+            <div class="panel flex-1 panel-animate" style="animation-delay: 0.2s;">
+                <div class="panel-header panel-header-blue">
+                    <i class="fas fa-microphone-alt mr-2"></i>对话转写
+                    <button class="fullscreen-btn" onclick="openFullscreen('record-content', '对话转写')" title="放大">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+                <div id="record-content">
+                    <div class="panel-body flex flex-col h-full">
+                        <div class="result-container flex-1 w-full">
+                            <pre id="result" class="result-text"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var APPID = '';
+        var API_KEY = '';
+        var configLoaded = false;
+        var initPending = false;
+        
+        function initializeApp() {
+            if (typeof initRecognition === 'function' && typeof initChat === 'function') {
+                if (!APPID || !API_KEY) {
+                    console.warn('⚠️ 讯飞配置未加载，录音功能可能无法使用');
+                }
+                initRecognition();
+                initChat(1);
+                console.log('✓ 应用初始化完成');
+            } else {
+                if (!initPending) {
+                    initPending = true;
+                    setTimeout(initializeApp, 100);
+                }
+            }
+        }
+        
+        function loadConfigAndInit() {
+            fetch('/api/config')
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('配置请求失败 (HTTP ' + response.status + ')');
+                    }
+                    return response.json();
+                })
+                .then(function(config) {
+                    APPID = config.xfyunAppId || '';
+                    API_KEY = config.xfyunApiKey || '';
+                    configLoaded = true;
+                    if (APPID) {
+                        console.log('✓ 讯飞配置已加载 (AppID: ' + APPID + ')');
+                    } else {
+                        console.warn('⚠️ 讯飞 AppID 未配置，请检查 .env 文件');
+                    }
+                })
+                .catch(function(error) {
+                    console.error('✗ 获取配置失败:', error.message);
+                    console.warn('⚠️ 将使用空配置启动，录音功能可能无法使用');
+                })
+                .finally(function() {
+                    initializeApp();
+                });
+        }
+            
+        (function checkAuth() {
+            const authed = localStorage.getItem('authed');
+            const basicInfoFilled = localStorage.getItem('basicInfoFilled');
+            
+            if (!authed || !basicInfoFilled) {
+                window.location.replace('auth.html');
+            }
+        })();
+        
+        loadConfigAndInit();
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="public/js/md5.js"></script>
+    <script src="public/js/hmac-sha256.js"></script>
+    <script src="public/js/HmacSHA1.js"></script>
+    <script src="public/js/enc-base64-min.js"></script>
+    <script src="public/js/recorder-manager.js"></script>
+    <script src="public/js/recognition.js"></script>
+    <script src="public/js/chat.js"></script>
+
+    <div class="basic-info-modal" id="basicInfoModal">
+        <div class="basic-info-box">
+            <div class="basic-info-header">
+                <h3><i class="fas fa-id-card"></i> 基本信息</h3>
+                <button class="basic-info-close" onclick="closeBasicInfoModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="basic-info-body">
+                <div class="info-display-area" id="infoDisplayArea">
+                    <div class="info-section">
+                        <div class="info-section-title">询问人信息</div>
+                        <div class="info-row">
+                            <div class="info-item">
+                                <div class="info-label">询问人姓名</div>
+                                <div class="info-value" id="displayInquirerName">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="info-section">
+                        <div class="info-section-title">被询问人信息</div>
+                        <div class="info-row">
+                            <div class="info-item">
+                                <div class="info-label">姓名</div>
+                                <div class="info-value" id="displayRespondentName">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">身份证号</div>
+                                <div class="info-value" id="displayIdCard">-</div>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-item">
+                                <div class="info-label">住址</div>
+                                <div class="info-value" id="displayAddress">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">联系电话</div>
+                                <div class="info-value" id="displayPhone">-</div>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-item">
+                                <div class="info-label">职业</div>
+                                <div class="info-value" id="displayOccupation">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">政治面貌</div>
+                                <div class="info-value" id="displayPoliticalStatus">-</div>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-item">
+                                <div class="info-label">与案件关系</div>
+                                <div class="info-value" id="displayCaseRelation">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-edit-area" id="infoEditArea">
+                    <div class="info-section">
+                        <div class="info-section-title">询问人信息</div>
+                        <div class="info-row">
+                            <div class="info-item">
+                                <div class="info-label">询问人姓名</div>
+                                <input type="text" class="info-input" id="editInquirerName" placeholder="请输入">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="info-section">
+                        <div class="info-section-title">被询问人信息</div>
+                        <div class="info-row">
+                            <div class="info-item">
+                                <div class="info-label">姓名</div>
+                                <input type="text" class="info-input" id="editRespondentName" placeholder="请输入">
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">身份证号</div>
+                                <input type="text" class="info-input" id="editIdCard" placeholder="请输入">
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-item">
+                                <div class="info-label">住址</div>
+                                <input type="text" class="info-input" id="editAddress" placeholder="请输入">
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">联系电话</div>
+                                <input type="text" class="info-input" id="editPhone" placeholder="请输入">
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-item">
+                                <div class="info-label">职业</div>
+                                <input type="text" class="info-input" id="editOccupation" placeholder="请输入">
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">政治面貌</div>
+                                <div class="info-radio-group">
+                                    <label class="info-radio-item">
+                                        <input type="radio" name="editPoliticalStatus" value="共产党员"> 共产党员
+                                    </label>
+                                    <label class="info-radio-item">
+                                        <input type="radio" name="editPoliticalStatus" value="政协委员"> 政协委员
+                                    </label>
+                                    <label class="info-radio-item">
+                                        <input type="radio" name="editPoliticalStatus" value="都不是" checked> 都不是
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-item">
+                                <div class="info-label">与案件关系</div>
+                                <input type="text" class="info-input" id="editCaseRelation" placeholder="如：嫌疑人、证人、当事人等">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="basic-info-footer" id="infoFooter">
+                <button class="basic-info-btn edit" onclick="switchToEditMode()">
+                    <i class="fas fa-edit mr-1"></i>修改
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('generate-record-btn').addEventListener('click', function() {
+                var recordText = document.getElementById('result').textContent.trim();
+                if (!recordText) {
+                    alert('请先录音后再生成笔录');
+                    return;
+                }
+                var basicInfo = getBasicInfo();
+                if (window.sendToWorkflow2Manual) {
+                    window.sendToWorkflow2Manual(recordText, basicInfo);
+                }
+            });
+
+            document.getElementById('export-record-btn').addEventListener('click', function() {
+                showExportMenu();
+            });
+            
+            document.getElementById('export-result-btn').addEventListener('click', function() {
+                if (window.exportRecording) {
+                    window.exportRecording();
+                }
+            });
+
+            document.getElementById('basic-info-btn').addEventListener('click', function() {
+                openBasicInfoModal();
+            });
+        });
+
+        function showExportMenu() {
+            var outputDiv = document.getElementById('record-output');
+            var textContent = outputDiv.textContent.trim();
+            
+            if (!textContent || textContent === '笔录内容将显示在这里' || textContent === '可点击生成笔录后编辑，或直接在此输入') {
+                alert('请先生成笔录内容');
+                return;
+            }
+
+            var menu = document.createElement('div');
+            menu.className = 'export-menu';
+            menu.innerHTML = `
+                <div class="export-menu-content">
+                    <div class="export-menu-title">选择导出格式</div>
+                    <div class="export-menu-options">
+                        <button class="export-menu-btn" onclick="exportRecord('doc')">
+                            <i class="fas fa-file-word"></i>
+                            <span>.doc</span>
+                        </button>
+                        <button class="export-menu-btn" onclick="exportRecord('txt')">
+                            <i class="fas fa-file-alt"></i>
+                            <span>.txt</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            menu.addEventListener('click', function(e) {
+                if (e.target === menu) {
+                    menu.remove();
+                }
+            });
+
+            document.body.appendChild(menu);
+            menu.classList.add('active');
+
+            setTimeout(function() {
+                document.addEventListener('click', function closeMenu(e) {
+                    if (!menu.contains(e.target) && e.target.id !== 'export-record-btn') {
+                        menu.remove();
+                        document.removeEventListener('click', closeMenu);
+                    }
+                });
+            }, 10);
+        }
+
+        function exportRecord(format) {
+            var outputDiv = document.getElementById('record-output');
+            var content = outputDiv.innerHTML.trim();
+            
+            var textContent = outputDiv.textContent.trim();
+            if (!textContent || textContent === '笔录内容将显示在这里' || textContent === '可点击生成笔录后编辑，或直接在此输入') {
+                alert('请先生成笔录内容');
+                return;
+            }
+
+            var now = new Date();
+            var dateStr = now.getFullYear() + 
+                          String(now.getMonth() + 1).padStart(2, '0') + 
+                          String(now.getDate()).padStart(2, '0') + '_' +
+                          String(now.getHours()).padStart(2, '0') + 
+                          String(now.getMinutes()).padStart(2, '0');
+
+            if (format === 'doc') {
+                exportAsDoc(content, dateStr);
+            } else if (format === 'txt') {
+                exportAsTxt(outputDiv, dateStr);
+            }
+        }
+
+        function exportAsDoc(content, dateStr) {
+            var docContent = `
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>询问笔录</title>
+<style>
+body {
+    font-family: '仿宋', 'FangSong', 'SimSun', serif;
+    font-size: 14px;
+    line-height: 2;
+    margin: 45px 60px;
+    color: #000;
+}
+h1 {
+    text-align: center;
+    font-size: 26px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 15px;
+}
+</style>
+</head>
+<body>
+<h1>询问笔录</h1>
+${content}
+</body>
+</html>`;
+
+            var blob = new Blob([docContent], { type: 'application/msword;charset=utf-8' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = '询问笔录_' + dateStr + '.doc';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function exportAsTxt(outputDiv, dateStr) {
+            var textContent = outputDiv.textContent.trim();
+            
+            var lines = textContent.split('\n').filter(function(line) {
+                return line.trim();
+            });
+            
+            var txtContent = '';
+            lines.forEach(function(line) {
+                txtContent += line.trim() + '\n';
+            });
+
+            var blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = '询问笔录_' + dateStr + '.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function formatDoc(cmd, value, targetElement) {
+            var target = targetElement || document.getElementById('record-output');
+            if (target) {
+                target.focus();
+                document.execCommand(cmd, false, value);
+            }
+        }
+
+        var recordOutput = document.getElementById('record-output');
+        recordOutput.addEventListener('input', function() {
+            var text = this.textContent.trim();
+            if (text) {
+                this.classList.add('has-content');
+            } else {
+                this.classList.remove('has-content');
+            }
+        });
+
+        function openBasicInfoModal() {
+            loadBasicInfoToDisplay();
+            document.getElementById('basicInfoModal').classList.add('active');
+            switchToDisplayMode();
+        }
+
+        function closeBasicInfoModal() {
+            document.getElementById('basicInfoModal').classList.remove('active');
+        }
+
+        function loadBasicInfoToDisplay() {
+            var savedInfo = localStorage.getItem('basicInfo');
+            var info = savedInfo ? JSON.parse(savedInfo) : {};
+            
+            document.getElementById('displayInquirerName').textContent = info.inquirerName || '-';
+            document.getElementById('displayRespondentName').textContent = info.respondentName || '-';
+            document.getElementById('displayIdCard').textContent = info.idCard || '-';
+            document.getElementById('displayAddress').textContent = info.address || '-';
+            document.getElementById('displayPhone').textContent = info.phone || '-';
+            document.getElementById('displayOccupation').textContent = info.occupation || '-';
+            document.getElementById('displayPoliticalStatus').textContent = info.politicalStatus || '-';
+            document.getElementById('displayCaseRelation').textContent = info.caseRelation || '-';
+        }
+
+        function switchToEditMode() {
+            var savedInfo = localStorage.getItem('basicInfo');
+            var info = savedInfo ? JSON.parse(savedInfo) : {};
+            
+            document.getElementById('editInquirerName').value = info.inquirerName || '';
+            document.getElementById('editRespondentName').value = info.respondentName || '';
+            document.getElementById('editIdCard').value = info.idCard || '';
+            document.getElementById('editAddress').value = info.address || '';
+            document.getElementById('editPhone').value = info.phone || '';
+            document.getElementById('editOccupation').value = info.occupation || '';
+            document.getElementById('editCaseRelation').value = info.caseRelation || '';
+            
+            var radios = document.getElementsByName('editPoliticalStatus');
+            for (var i = 0; i < radios.length; i++) {
+                radios[i].checked = radios[i].value === (info.politicalStatus || '都不是');
+            }
+            
+            document.getElementById('infoDisplayArea').classList.add('hidden');
+            document.getElementById('infoEditArea').classList.add('active');
+            document.getElementById('infoFooter').innerHTML = `
+                <button class="basic-info-btn cancel" onclick="switchToDisplayMode()">
+                    <i class="fas fa-times mr-1"></i>取消
+                </button>
+                <button class="basic-info-btn save" onclick="saveBasicInfo()">
+                    <i class="fas fa-save mr-1"></i>保存
+                </button>
+            `;
+        }
+
+        function switchToDisplayMode() {
+            document.getElementById('infoDisplayArea').classList.remove('hidden');
+            document.getElementById('infoEditArea').classList.remove('active');
+            document.getElementById('infoFooter').innerHTML = `
+                <button class="basic-info-btn edit" onclick="switchToEditMode()">
+                    <i class="fas fa-edit mr-1"></i>修改
+                </button>
+            `;
+            loadBasicInfoToDisplay();
+        }
+
+        function saveBasicInfo() {
+            var formData = {
+                inquirerName: document.getElementById('editInquirerName').value.trim(),
+                respondentName: document.getElementById('editRespondentName').value.trim(),
+                idCard: document.getElementById('editIdCard').value.trim(),
+                address: document.getElementById('editAddress').value.trim(),
+                phone: document.getElementById('editPhone').value.trim(),
+                occupation: document.getElementById('editOccupation').value.trim(),
+                politicalStatus: document.querySelector('input[name="editPoliticalStatus"]:checked').value,
+                caseRelation: document.getElementById('editCaseRelation').value.trim()
+            };
+            
+            localStorage.setItem('basicInfo', JSON.stringify(formData));
+            switchToDisplayMode();
+        }
+
+        function getBasicInfo() {
+            var savedInfo = localStorage.getItem('basicInfo');
+            return savedInfo ? JSON.parse(savedInfo) : null;
+        }
+
+        function openHistoryPanel() {
+            document.getElementById('historyPanel').classList.add('active');
+            document.getElementById('historyOverlay').classList.add('active');
+        }
+
+        function closeHistoryPanel() {
+            document.getElementById('historyPanel').classList.remove('active');
+            document.getElementById('historyOverlay').classList.remove('active');
+        }
+
+        var fullscreenModal = null;
+
+        function openWorkflow2Fullscreen() {
+            var recordWrapper = document.querySelector('.record-wrapper');
+            if (!recordWrapper) return;
+            
+            var originalRecordOutput = document.getElementById('record-output');
+            var toolbar = recordWrapper.querySelector('.record-toolbar');
+            
+            fullscreenModal = document.createElement('div');
+            fullscreenModal.className = 'fullscreen-modal';
+            fullscreenModal.id = 'fullscreenModal';
+            
+            var toolbarClone = toolbar.cloneNode(true);
+            var toolbarBtns = toolbarClone.querySelectorAll('button');
+            toolbarBtns.forEach(function(btn, index) {
+                btn.onclick = null;
+            });
+            
+            fullscreenModal.innerHTML = 
+                '<div class="fullscreen-content wf2-fullscreen">' +
+                    '<div class="fullscreen-header">' +
+                        '<span>笔录</span>' +
+                        '<button class="fullscreen-close" onclick="closeWorkflow2Fullscreen()">' +
+                            '<i class="fas fa-times"></i>' +
+                        '</button>' +
+                    '</div>' +
+                    '<div class="wf2-fullscreen-body">' +
+                        '<div class="record-toolbar"></div>' +
+                        '<div id="record-output" class="record-output wf2-record-output" contenteditable="true"></div>' +
+                    '</div>' +
+                '</div>';
+            
+            var fullscreenToolbar = fullscreenModal.querySelector('.record-toolbar');
+            var fullscreenRecordOutput = fullscreenModal.querySelector('.record-output');
+            fullscreenToolbar.innerHTML = toolbar.innerHTML;
+            fullscreenRecordOutput.innerHTML = originalRecordOutput.innerHTML;
+            
+            var placeholder = originalRecordOutput.querySelector('.record-placeholder');
+            if (placeholder) {
+                fullscreenRecordOutput.innerHTML = '';
+                fullscreenRecordOutput.appendChild(placeholder.cloneNode(true));
+            }
+            
+            fullscreenRecordOutput.className = originalRecordOutput.className + ' wf2-record-output';
+            
+            fullscreenRecordOutput.addEventListener('input', function() {
+                originalRecordOutput.innerHTML = this.innerHTML;
+                var originalPlaceholder = originalRecordOutput.querySelector('.record-placeholder');
+                var fullscreenPlaceholder = fullscreenRecordOutput.querySelector('.record-placeholder');
+                if (originalPlaceholder && fullscreenPlaceholder) {
+                    if (fullscreenRecordOutput.textContent.trim()) {
+                        fullscreenPlaceholder.style.display = 'none';
+                        originalPlaceholder.style.display = 'none';
+                    } else {
+                        fullscreenPlaceholder.style.display = '';
+                        originalPlaceholder.style.display = '';
+                    }
+                }
+            });
+            
+            rebindToolbarButtons(fullscreenToolbar, fullscreenRecordOutput);
+            
+            document.body.appendChild(fullscreenModal);
+            fullscreenModal.addEventListener('click', function(e) {
+                if (e.target === fullscreenModal) closeWorkflow2Fullscreen();
+            });
+            requestAnimationFrame(function() {
+                fullscreenModal.classList.add('active');
+            });
+        }
+
+        function closeWorkflow2Fullscreen() {
+            var modal = document.getElementById('fullscreenModal');
+            if (modal) {
+                var fullscreenRecordOutput = modal.querySelector('.record-output');
+                var originalRecordOutput = document.getElementById('record-output');
+                
+                if (fullscreenRecordOutput && originalRecordOutput) {
+                    originalRecordOutput.innerHTML = fullscreenRecordOutput.innerHTML;
+                }
+                
+                modal.classList.remove('active');
+                setTimeout(function() { modal.remove(); }, 300);
+            }
+        }
+
+        function rebindToolbarButtons(toolbar, targetElement) {
+            var buttons = toolbar.querySelectorAll('button');
+            buttons.forEach(function(btn) {
+                var onclick = btn.getAttribute('onclick');
+                if (onclick) {
+                    var match = onclick.match(/formatDoc\(['"]([^'"]+)['"]\)/);
+                    if (match) {
+                        var formatType = match[1];
+                        btn.onclick = function() {
+                            formatDoc(formatType, targetElement);
+                        };
+                    }
+                }
+            });
+            
+            var selects = toolbar.querySelectorAll('select');
+            selects.forEach(function(select) {
+                var onchange = select.getAttribute('onchange');
+                if (onchange) {
+                    var match = onchange.match(/formatDoc\(['"]([^'"]+)['"],\s*this\.value\)/);
+                    if (match) {
+                        var formatType = match[1];
+                        select.onchange = function() {
+                            var value = this.value;
+                            if (value) {
+                                formatDoc(formatType, value, targetElement);
+                            }
+                            this.value = '';
+                        };
+                    }
+                }
+            });
+        }
+
+        function openFullscreen(panelId, title) {
+            var panel = document.getElementById(panelId);
+            if (!panel) return;
+            
+            fullscreenModal = document.createElement('div');
+            fullscreenModal.className = 'fullscreen-modal';
+            fullscreenModal.id = 'fullscreenModal';
+            fullscreenModal.innerHTML = 
+                '<div class="fullscreen-content">' +
+                    '<div class="fullscreen-header">' +
+                        '<span>' + title + '</span>' +
+                        '<button class="fullscreen-close" onclick="closeFullscreen()">' +
+                            '<i class="fas fa-times"></i>' +
+                        '</button>' +
+                    '</div>' +
+                    '<div class="fullscreen-body">' + panel.innerHTML + '</div>' +
+                '</div>';
+            
+            document.body.appendChild(fullscreenModal);
+            fullscreenModal.addEventListener('click', function(e) {
+                if (e.target === fullscreenModal) closeFullscreen();
+            });
+            requestAnimationFrame(function() {
+                fullscreenModal.classList.add('active');
+            });
+        }
+
+        function closeFullscreen() {
+            var modal = document.getElementById('fullscreenModal');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(function() { modal.remove(); }, 300);
+            }
+        }
+
+        window.openFullscreen = openFullscreen;
+        window.closeFullscreen = closeFullscreen;
+        window.openWorkflow2Fullscreen = openWorkflow2Fullscreen;
+        window.closeWorkflow2Fullscreen = closeWorkflow2Fullscreen;
+        window.openHistoryPanel = openHistoryPanel;
+        window.closeHistoryPanel = closeHistoryPanel;
+        window.exportRecord = exportRecord;
+        window.formatDoc = formatDoc;
+    </script>
+</body>
+</html>
