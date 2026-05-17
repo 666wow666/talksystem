@@ -57,9 +57,9 @@ class GLMService {
         { role: 'user', content: bufferedContent }
       ], 0.7);
 
-      this.workflow1Resolvers.forEach(resolve => resolve(result));
+      this.workflow1Resolvers.forEach(item => item.resolve(result));
     } catch (error) {
-      this.workflow1Resolvers.forEach(reject => reject(error));
+      this.workflow1Resolvers.forEach(item => item.reject(error));
     } finally {
       this.workflow1Resolvers = [];
       this.isProcessingWorkflow1 = false;

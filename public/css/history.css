@@ -52,6 +52,7 @@
     gap: 10px;
 }
 
+.history-clear-btn,
 .history-close-btn {
     width: 32px;
     height: 32px;
@@ -64,6 +65,10 @@
     align-items: center;
     justify-content: center;
     transition: all 0.3s;
+}
+
+.history-clear-btn:hover {
+    background: rgba(239, 68, 68, 0.8);
 }
 
 .history-close-btn:hover {

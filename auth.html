@@ -429,6 +429,8 @@
             var correctKey = '123456';
             
             if (key === correctKey) {
+                // 清除之前的所有会话数据（包括历史记录）
+                clearAllSessionData();
                 localStorage.setItem('authed', 'true');
                 localStorage.removeItem('basicInfoFilled');
                 window.location.href = 'data-collect.html?authed=1';
@@ -444,11 +446,18 @@
             }
         }
 
-        // 页面加载时清除之前的认证状态，确保每次都需要重新认证
-        window.addEventListener('load', function() {
+        // 清除所有会话数据
+        function clearAllSessionData() {
+            // 保留用户设置，但清除会话相关数据
             localStorage.removeItem('authed');
             localStorage.removeItem('basicInfoFilled');
             localStorage.removeItem('basicInfo');
+            localStorage.removeItem('workflow1History'); // 清除历史记录
+        }
+
+        // 页面加载时清除之前的认证状态，确保每次都需要重新认证
+        window.addEventListener('load', function() {
+            clearAllSessionData();
         });
     </script>
 </body>

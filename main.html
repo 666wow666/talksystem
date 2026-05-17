@@ -165,9 +165,14 @@
             <div class="history-panel" id="historyPanel">
                 <div class="history-panel-header">
                     <h3><i class="fas fa-history"></i> 历史记录</h3>
-                    <button id="close-history" class="history-close-btn" onclick="closeHistoryPanel()">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="history-clear-btn" onclick="clearHistory()" title="清除历史记录">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                        <button id="close-history" class="history-close-btn" onclick="closeHistoryPanel()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="history-list" id="historyList">
                     <div class="history-empty">
@@ -197,18 +202,17 @@
     </div>
 
     <script>
-        var APPID = '';
-        var API_KEY = '';
+        window.APPID = '';
+        window.API_KEY = '';
         var configLoaded = false;
         var initPending = false;
         
         function initializeApp() {
-            if (typeof initRecognition === 'function' && typeof initChat === 'function') {
-                if (!APPID || !API_KEY) {
+            if (window.MainModule && window.MainModule.init) {
+                if (!window.APPID || !window.API_KEY) {
                     console.warn('⚠️ 讯飞配置未加载，录音功能可能无法使用');
                 }
-                initRecognition();
-                initChat(1);
+                window.MainModule.init();
                 console.log('✓ 应用初始化完成');
             } else {
                 if (!initPending) {
@@ -227,11 +231,11 @@
                     return response.json();
                 })
                 .then(function(config) {
-                    APPID = config.xfyunAppId || '';
-                    API_KEY = config.xfyunApiKey || '';
+                    window.APPID = config.xfyunAppId || '';
+                    window.API_KEY = config.xfyunApiKey || '';
                     configLoaded = true;
-                    if (APPID) {
-                        console.log('✓ 讯飞配置已加载 (AppID: ' + APPID + ')');
+                    if (window.APPID) {
+                        console.log('✓ 讯飞配置已加载 (AppID: ' + window.APPID + ')');
                     } else {
                         console.warn('⚠️ 讯飞 AppID 未配置，请检查 .env 文件');
                     }
@@ -246,8 +250,8 @@
         }
             
         (function checkAuth() {
-            const authed = localStorage.getItem('authed');
-            const basicInfoFilled = localStorage.getItem('basicInfoFilled');
+            var authed = localStorage.getItem('authed');
+            var basicInfoFilled = localStorage.getItem('basicInfoFilled');
             
             if (!authed || !basicInfoFilled) {
                 window.location.replace('auth.html');
@@ -258,13 +262,19 @@
     </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="public/js/md5.js"></script>
     <script src="public/js/hmac-sha256.js"></script>
     <script src="public/js/HmacSHA1.js"></script>
     <script src="public/js/enc-base64-min.js"></script>
     <script src="public/js/recorder-manager.js"></script>
-    <script src="public/js/recognition.js"></script>
-    <script src="public/js/chat.js"></script>
+    <script src="public/js/modules/speech-recorder.js"></script>
+    <script src="public/js/modules/speech-recognition.js"></script>
+    <script src="public/js/modules/history.js"></script>
+    <script src="public/js/modules/workflow1.js"></script>
+    <script src="public/js/modules/workflow2.js"></script>
+    <script src="public/js/modules/export.js"></script>
+    <script src="public/js/modules/main.js"></script>
 
     <div class="basic-info-modal" id="basicInfoModal">
         <div class="basic-info-box">
