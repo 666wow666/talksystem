@@ -89,3 +89,5 @@ logs/
 *.xlsx
 *.csv
 *.md
+
+.gitignore
