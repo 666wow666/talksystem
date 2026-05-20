@@ -1,28 +1,28 @@
 const { BaseAIService } = require('./baseAIService');
 const { config } = require('../config');
 
-class GLMService extends BaseAIService {
+class NvidiaService extends BaseAIService {
   constructor() {
     super();
-    this.baseURL = config.glm.baseURL || 'https://open.bigmodel.cn/api/paas/v4';
+    this.baseURL = config.nvidia.baseURL || 'https://integrate.api.nvidia.com/v1';
   }
 
   getApiKey() {
     if (!this.apiKey) {
-      this.apiKey = config.glm.apiKey;
+      this.apiKey = config.nvidia.apiKey;
     }
     return this.apiKey;
   }
 
   getModel() {
     if (!this.model) {
-      this.model = config.glm.model || 'glm-4-flash';
+      this.model = config.nvidia.model || 'deepseek-ai/deepseek-v4-flash';
     }
     return this.model;
   }
 
   getModelName() {
-    return 'glm';
+    return 'nvidia';
   }
 
   async executeRequest(messages, temperature) {
@@ -30,7 +30,7 @@ class GLMService extends BaseAIService {
     const model = this.getModel();
 
     if (!apiKey) {
-      throw new Error('GLM_API_KEY 未配置，请检查 .env 文件');
+      throw new Error('NVIDIA_API_KEY 未配置，请检查 .env 文件');
     }
 
     const response = await fetch(`${this.baseURL}/chat/completions`, {
@@ -42,13 +42,16 @@ class GLMService extends BaseAIService {
       body: JSON.stringify({
         model: model,
         messages: messages,
-        temperature: temperature
+        temperature: temperature || 0.7,
+        max_tokens: 16384,
+        top_p: 0.95,
+        stream: false
       })
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`GLM API错误: ${response.status} - ${errorText}`);
+      throw new Error(`NVIDIA API错误: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
@@ -61,6 +64,6 @@ class GLMService extends BaseAIService {
   }
 }
 
-const glmService = new GLMService();
+const nvidiaService = new NvidiaService();
 
-module.exports = { GLMService, glmService };
+module.exports = { NvidiaService, nvidiaService };

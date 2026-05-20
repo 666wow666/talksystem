@@ -1,28 +1,28 @@
 const { BaseAIService } = require('./baseAIService');
 const { config } = require('../config');
 
-class GLMService extends BaseAIService {
+class KimiService extends BaseAIService {
   constructor() {
     super();
-    this.baseURL = config.glm.baseURL || 'https://open.bigmodel.cn/api/paas/v4';
+    this.baseURL = config.kimi.baseURL || 'https://api.moonshot.cn/v1';
   }
 
   getApiKey() {
     if (!this.apiKey) {
-      this.apiKey = config.glm.apiKey;
+      this.apiKey = config.kimi.apiKey;
     }
     return this.apiKey;
   }
 
   getModel() {
     if (!this.model) {
-      this.model = config.glm.model || 'glm-4-flash';
+      this.model = config.kimi.model || 'moonshot-v1-8k';
     }
     return this.model;
   }
 
   getModelName() {
-    return 'glm';
+    return 'kimi';
   }
 
   async executeRequest(messages, temperature) {
@@ -30,7 +30,7 @@ class GLMService extends BaseAIService {
     const model = this.getModel();
 
     if (!apiKey) {
-      throw new Error('GLM_API_KEY 未配置，请检查 .env 文件');
+      throw new Error('KIMI_API_KEY 未配置，请检查 .env 文件');
     }
 
     const response = await fetch(`${this.baseURL}/chat/completions`, {
@@ -48,7 +48,7 @@ class GLMService extends BaseAIService {
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`GLM API错误: ${response.status} - ${errorText}`);
+      throw new Error(`Kimi API错误: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
@@ -61,6 +61,6 @@ class GLMService extends BaseAIService {
   }
 }
 
-const glmService = new GLMService();
+const kimiService = new KimiService();
 
-module.exports = { GLMService, glmService };
+module.exports = { KimiService, kimiService };

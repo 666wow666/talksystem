@@ -1,73 +1,143 @@
-/**
- * 聊天API路由模块
- * 处理前端发起的AI对话请求，分发到不同的工作流进行处理
- */
-
 const express = require('express');
-const { glmService } = require('../services/glmService');
+const { AIServiceFactory } = require('../services/aiServiceFactory');
+const { modelSelector } = require('../services/modelSelector');
 
 const router = express.Router();
 
-/**
- * POST /chat/:workflowNum
- * 根据工作流编号调用相应的AI处理逻辑
- * @param {number} req.params.workflowNum - 工作流编号，1或2
- * @param {Object} req.body - 请求体，包含message和basicInfo字段
- * @returns {Object} - JSON响应，包含AI生成的内容
- */
 router.post('/:workflowNum', async (req, res) => {
   try {
     const workflowNum = parseInt(req.params.workflowNum);
     const { message, basicInfo } = req.body;
 
+    console.log('\n========== [工作流' + workflowNum + '] 新请求 ==========');
+    console.log('请求时间:', new Date().toLocaleString());
+    console.log('消息长度:', message ? message.length : 'N/A');
+    console.log('包含基本信息:', basicInfo ? '是' : '否');
+
     if (!message) {
+      console.log('错误: 缺少 message 字段');
       return res.status(400).json({ error: "缺少 message 字段" });
     }
 
     if (![1, 2].includes(workflowNum)) {
+      console.log('错误: 不支持的工作流编号', workflowNum);
       return res.status(400).json({ error: "不支持的工作流编号" });
     }
 
-    console.log(`[工作流${workflowNum}] 收到请求`);
-
+    const currentModel = modelSelector.getCurrentModel();
+    console.log('当前模型:', currentModel);
+    
+    const aiService = AIServiceFactory.getService(currentModel);
+    
     let result;
     if (workflowNum === 1) {
-      result = await glmService.workflow1(message);
+      console.log('调用工作流1: 生成推荐问题');
+      result = await aiService.workflow1(message);
     } else {
-      result = await glmService.workflow2(message, basicInfo);
+      console.log('调用工作流2: 生成笔录');
+      result = await aiService.workflow2(message, basicInfo);
     }
 
-    res.json({ content: result });
+    console.log('AI 返回结果:');
+    console.log('----------------------------------------');
+    console.log(result ? result : '(空)');
+    console.log('----------------------------------------');
+    console.log('结果长度:', result ? result.length : 0);
+    console.log('========== [工作流' + workflowNum + '] 请求完成 ==========\n');
+
+    res.json({ content: result, model: currentModel });
 
   } catch (error) {
-    console.error(`[工作流${req.params.workflowNum}] 错误:`, error.message);
+    console.log('\n!!!!!!!!!! [工作流' + req.params.workflowNum + '] 错误 !!!!!!!!!!');
+    console.error('错误时间:', new Date().toLocaleString());
+    console.error('错误内容:', error.message);
+    if (error.stack) {
+      console.error('堆栈:\n', error.stack);
+    }
+    console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
     res.status(500).json({ error: error.message });
   }
 });
 
-/**
- * POST /chat
- * 默认工作流接口，调用工作流1（智能追问生成）
- * @param {Object} req.body - 请求体，包含message字段
- * @returns {Object} - JSON响应，包含AI生成的内容
- */
 router.post('/', async (req, res) => {
   try {
     const { message } = req.body;
 
+    console.log('\n========== [工作流1 (默认路由)] 新请求 ==========');
+    console.log('请求时间:', new Date().toLocaleString());
+    console.log('消息长度:', message ? message.length : 'N/A');
+
     if (!message) {
+      console.log('错误: 缺少 message 字段');
       return res.status(400).json({ error: "缺少 message 字段" });
     }
 
-    console.log(`[工作流1] 收到请求`);
-    const result = await glmService.workflow1(message);
+    const currentModel = modelSelector.getCurrentModel();
+    console.log('当前模型:', currentModel);
+    
+    const aiService = AIServiceFactory.getService(currentModel);
+    
+    console.log('调用工作流1: 生成推荐问题');
+    const result = await aiService.workflow1(message);
 
-    res.json({ content: result });
+    console.log('AI 返回结果:');
+    console.log('----------------------------------------');
+    console.log(result ? result : '(空)');
+    console.log('----------------------------------------');
+    console.log('结果长度:', result ? result.length : 0);
+    console.log('========== [工作流1 (默认路由)] 请求完成 ==========\n');
+
+    res.json({ content: result, model: currentModel });
 
   } catch (error) {
-    console.error("[工作流1] 错误:", error.message);
+    console.log('\n!!!!!!!!!! [工作流1 (默认路由)] 错误 !!!!!!!!!!');
+    console.error('错误时间:', new Date().toLocaleString());
+    console.error('错误内容:', error.message);
+    if (error.stack) {
+      console.error('堆栈:\n', error.stack);
+    }
+    console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
     res.status(500).json({ error: error.message });
   }
 });
+
+router.get('/models', (req, res) => {
+  try {
+    const availableModels = AIServiceFactory.getAvailableModels();
+    const currentModel = modelSelector.getCurrentModel();
+    
+    console.log('\n========== [GET /models] 请求 ==========');
+    console.log('可用模型:', availableModels.join(', '));
+    console.log('当前模型:', currentModel);
+    console.log('========================================\n');
+    
+    res.json({
+      availableModels: availableModels,
+      currentModel: currentModel,
+      models: availableModels.map(name => ({
+        name: name,
+        displayName: getModelDisplayName(name)
+      }))
+    });
+  } catch (error) {
+    console.error('\n!!!!!!!!!! [GET /models] 错误 !!!!!!!!!!');
+    console.error(error);
+    console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
+    res.status(500).json({ error: error.message });
+  }
+});
+
+function getModelDisplayName(name) {
+  const displayNames = {
+    glm: '智谱GLM',
+    deepseek: 'DeepSeek',
+    doubao: '豆包',
+    kimi: 'Kimi',
+    qianwen: '千问',
+    ernie: '文心一言',
+    nvidia: 'NVIDIA'
+  };
+  return displayNames[name] || name;
+}
 
 module.exports = router;

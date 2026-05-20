@@ -22,7 +22,6 @@
             position: relative;
         }
 
-        /* 启动动画覆盖层 */
         #splash-screen {
             position: fixed;
             top: 0;
@@ -38,7 +37,6 @@
             overflow: hidden;
         }
 
-        /* 启动画面光效 */
         #splash-screen::before {
             content: '';
             position: absolute;
@@ -61,7 +59,6 @@
             pointer-events: none;
         }
 
-        /* 动画画布 */
         #splash-canvas {
             position: absolute;
             top: 0;
@@ -116,7 +113,6 @@
             -webkit-text-stroke: 0.5px rgba(100, 150, 255, 0.3);
         }
 
-        /* 认证按钮 */
         .auth-btn {
             margin-top: 40px;
             padding: 14px 40px;
@@ -129,7 +125,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             opacity: 0;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(4px);
             box-shadow: 
                 0 0 20px rgba(100,200,255,0.3),
                 inset 0 0 20px rgba(255, 255, 255, 0.1);
@@ -144,7 +140,6 @@
                 inset 0 0 30px rgba(255, 255, 255, 0.2);
         }
 
-        /* 认证弹窗 */
         .auth-modal {
             display: none;
             position: fixed;
@@ -156,7 +151,7 @@
             z-index: 10000;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(2px);
         }
 
         .auth-modal.active {
@@ -224,9 +219,14 @@
             letter-spacing: 2px;
         }
 
-        .auth-box button:hover {
+        .auth-box button:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+        }
+
+        .auth-box button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
         }
 
         .auth-error {
@@ -243,10 +243,20 @@
         .auth-error.show {
             display: block;
         }
+
+        .auth-loading {
+            display: none;
+            margin-top: 12px;
+            color: #3b82f6;
+            font-size: 13px;
+        }
+
+        .auth-loading.show {
+            display: block;
+        }
     </style>
 </head>
 <body>
-    <!-- 启动动画 -->
     <div id="splash-screen">
         <canvas id="splash-canvas"></canvas>
         <div class="splash-content">
@@ -256,29 +266,25 @@
             <div class="splash-title">
                 <span>云</span><span>讯</span><span>智</span><span>警</span>
             </div>
-            <!-- 备用纯文本标题（动画失败时显示） -->
             <div class="splash-title-fallback" style="display: none; font-size: 48px; font-weight: 900; letter-spacing: 8px; color: white; text-shadow: 0 0 30px rgba(96, 165, 250, 0.8);">云讯智警</div>
             <button class="auth-btn" id="authBtn">认证</button>
         </div>
     </div>
 
-    <!-- 认证弹窗 -->
     <div class="auth-modal" id="authModal">
         <div class="auth-box">
             <span class="auth-close" id="authClose">&times;</span>
             <h2>请输入授权码</h2>
             <input type="password" id="authKey" placeholder="请输入Key" autocomplete="off">
             <button id="authSubmit">确认</button>
+            <p class="auth-loading" id="authLoading">验证中...</p>
             <p class="auth-error" id="authError">Key不正确，请重试</p>
         </div>
     </div>
 
     <script>
-        // 动画状态控制
         var isAnimating = true;
         var animationId;
-
-        // 粒子动画
         var particles = [];
         var canvas, ctx;
 
@@ -329,7 +335,6 @@
                 ctx.fill();
             }
             
-            // 绘制连线
             for (var i = 0; i < particles.length; i++) {
                 for (var j = i + 1; j < particles.length; j++) {
                     var dx = particles[i].x - particles[j].x;
@@ -351,7 +356,6 @@
 
         window.addEventListener('resize', resizeCanvas);
 
-        // 启动动画
         window.addEventListener('load', function() {
             initCanvas();
             
@@ -383,7 +387,6 @@
                 easing: 'easeOutCubic'
             });
 
-            // 备用：如果动画失败，3秒后显示纯文本标题
             setTimeout(function() {
                 var spans = document.querySelectorAll('.splash-title span');
                 var allHidden = true;
@@ -400,62 +403,87 @@
             }, 3000);
         });
 
-        // 点击认证按钮
         document.getElementById('authBtn').addEventListener('click', function() {
             document.getElementById('authModal').classList.add('active');
             document.getElementById('authKey').focus();
         });
 
-        // 关闭认证弹窗
         document.getElementById('authClose').addEventListener('click', function() {
             document.getElementById('authModal').classList.remove('active');
             document.getElementById('authKey').value = '';
             document.getElementById('authError').classList.remove('show');
         });
 
-        // 确认认证
         document.getElementById('authSubmit').addEventListener('click', doAuth);
 
-        // 输入框回车认证
         document.getElementById('authKey').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 doAuth();
             }
         });
 
-        // 认证函数
-        function doAuth() {
+        /**
+         * 执行认证逻辑
+         * 通过后端API验证密码，避免在前端暴露密码
+         */
+        async function doAuth() {
             var key = document.getElementById('authKey').value.trim();
-            var correctKey = '123456';
             
-            if (key === correctKey) {
-                // 清除之前的所有会话数据（包括历史记录）
-                clearAllSessionData();
-                localStorage.setItem('authed', 'true');
-                localStorage.removeItem('basicInfoFilled');
-                window.location.href = 'data-collect.html?authed=1';
-            } else {
+            if (!key) {
                 document.getElementById('authError').classList.add('show');
-                anime({
-                    targets: '#authKey',
-                    translateX: [-10, 10, -10, 10, 0],
-                    duration: 300,
-                    easing: 'easeInOutSine'
+                return;
+            }
+
+            var submitBtn = document.getElementById('authSubmit');
+            var loading = document.getElementById('authLoading');
+            var error = document.getElementById('authError');
+
+            submitBtn.disabled = true;
+            loading.classList.add('show');
+            error.classList.remove('show');
+
+            try {
+                const response = await fetch('/api/auth/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ password: key })
                 });
-                document.getElementById('authKey').value = '';
+
+                const result = await response.json();
+
+                if (result.success) {
+                    clearAllSessionData();
+                    localStorage.setItem('authed', 'true');
+                    localStorage.removeItem('basicInfoFilled');
+                    window.location.href = 'data-collect.html?authed=1';
+                } else {
+                    error.classList.add('show');
+                    anime({
+                        targets: '#authKey',
+                        translateX: [-10, 10, -10, 10, 0],
+                        duration: 300,
+                        easing: 'easeInOutSine'
+                    });
+                    document.getElementById('authKey').value = '';
+                }
+            } catch (err) {
+                error.textContent = '网络错误，请稍后重试';
+                error.classList.add('show');
+            } finally {
+                submitBtn.disabled = false;
+                loading.classList.remove('show');
             }
         }
 
-        // 清除所有会话数据
         function clearAllSessionData() {
-            // 保留用户设置，但清除会话相关数据
             localStorage.removeItem('authed');
             localStorage.removeItem('basicInfoFilled');
             localStorage.removeItem('basicInfo');
-            localStorage.removeItem('workflow1History'); // 清除历史记录
+            localStorage.removeItem('workflow1History');
         }
 
-        // 页面加载时清除之前的认证状态，确保每次都需要重新认证
         window.addEventListener('load', function() {
             clearAllSessionData();
         });

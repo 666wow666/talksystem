@@ -1,5 +1,14 @@
 
+/**
+ * 工作流2模块：笔录自动生成
+ * 根据审讯录音内容和基本信息，自动生成规范的询问笔录文档
+ */
 (function() {
+    /**
+     * HTML转义函数，防止XSS攻击
+     * @param {string} text - 待转义的文本
+     * @returns {string} - 转义后的安全文本
+     */
     function escapeHtml(text) {
         if (!text) return '';
         var div = document.createElement('div');
@@ -7,6 +16,11 @@
         return div.innerHTML;
     }
 
+    /**
+     * 发送文本到工作流2生成笔录
+     * @param {string} text - 录音转写文本
+     * @param {Object} basicInfo - 基本信息对象
+     */
     function sendToWorkflow2(text, basicInfo) {
         var recordOutput = document.getElementById('record-output');
         if (!recordOutput) return;
@@ -92,6 +106,11 @@
         });
     }
 
+    /**
+     * 渲染笔录内容到UI
+     * 解析响应内容、显示到页面
+     * @param {string} content - API返回的内容
+     */
     function renderRecordContent(content) {
         var recordOutput = document.getElementById('record-output');
         if (!recordOutput) return;
@@ -108,137 +127,44 @@
             }
         } catch (e) {}
         outputContent = outputContent.trim();
-        if (!outputContent) return;
-        if (outputContent.indexOf('http://') === 0 || outputContent.indexOf('https://') === 0) {
-            recordOutput.innerHTML = '<div style="text-align: center; padding: 40px 20px;">' +
-                '<div style="margin-bottom: 20px;">' +
-                '<i class="fas fa-spinner fa-spin" style="font-size: 48px; color: #3b82f6;"></i>' +
-                '</div>' +
-                '<h3 style="color: #333; margin-bottom: 10px;">正在处理笔录...</h3>' +
-                '<p style="color: #666; font-size: 14px;">自动下载中</p>' +
-                '</div>';
-            autoDownloadDocx(outputContent);
-        } else {
+        if (outputContent) {
             displayTextContent(outputContent);
         }
     }
 
-    function autoDownloadDocx(url) {
-        var recordOutput = document.getElementById('record-output');
-        if (!recordOutput) return;
-        var filename = 'record.docx';
-        try {
-            var urlObj = new URL(url);
-            var pathname = urlObj.pathname;
-            var parts = pathname.split('/');
-            if (parts.length > 0) {
-                var lastPart = parts[parts.length - 1];
-                if (lastPart.indexOf('.') !== -1) {
-                    filename = lastPart;
-                }
-            }
-        } catch (e) {}
-        fetch(url)
-            .then(function(response) {
-                if (!response.ok) throw new Error('下载失败');
-                return response.blob();
-            })
-            .then(function(blob) {
-                var downloadUrl = URL.createObjectURL(blob);
-                var link = document.createElement('a');
-                link.href = downloadUrl;
-                link.download = filename;
-                link.click();
-                URL.revokeObjectURL(downloadUrl);
-                return readDocxContent(blob);
-            })
-            .then(function(textContent) {
-                displayTextContent(textContent);
-            })
-            .catch(function(error) {
-                console.error('处理失败:', error);
-                showDocDownloadLink(url);
-            });
-    }
-
-    function readDocxContent(blob) {
-        return new Promise(function(resolve, reject) {
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    var arrayBuffer = e.target.result;
-                    var text = extractTextFromDocx(arrayBuffer);
-                    resolve(text);
-                } catch (error) {
-                    reject(error);
-                }
-            };
-            reader.onerror = function() {
-                reject(new Error('读取文件失败'));
-            };
-            reader.readAsArrayBuffer(blob);
-        });
-    }
-
-    function extractTextFromDocx(arrayBuffer) {
-        var zip = new JSZip();
-        zip.loadAsync(arrayBuffer).then(function(zipContent) {
-            return zipContent.file('word/document.xml').async('string');
-        }).then(function(docXml) {
-            var parser = new DOMParser();
-            var xmlDoc = parser.parseFromString(docXml, 'text/xml');
-            var textNodes = xmlDoc.getElementsByTagName('w:t');
-            var text = '';
-            for (var i = 0; i < textNodes.length; i++) {
-                text += textNodes[i].textContent + '\n';
-            }
-            displayTextContent(text);
-        }).catch(function(error) {
-            var recordOutput = document.getElementById('record-output');
-            if (recordOutput) {
-                showDocDownloadLink('解析失败，请手动下载');
-            }
-        });
-    }
-
+    /**
+     * 将笔录文本显示到页面
+     * 对文本进行格式化处理，添加标题、加粗等样式
+     * @param {string} text - 笔录文本内容
+     */
     function displayTextContent(text) {
+        console.log('[工作流2] 显示文本内容:', text);
         var recordOutput = document.getElementById('record-output');
-        if (!recordOutput) return;
+        if (!recordOutput) {
+            console.error('[工作流2] 找不到 record-output 元素');
+            return;
+        }
         var placeholder = recordOutput.querySelector('.record-placeholder');
         if (placeholder) placeholder.style.display = 'none';
         text = text.trim();
         if (!text) text = '文档内容为空';
-        var lines = text.split('\n').filter(function(line) { return line.trim(); });
+        var lines = text.split('\n');
         var html = '<div style="font-family: 仿宋, FangSong, serif; font-size: 16px; line-height: 2; padding: 20px;">';
         lines.forEach(function(line) {
-            line = line.trim();
-            if (line) {
-                if (line.match(/^(询问笔录|询问记录|笔录)/)) {
-                    html += '<h1 style="font-size: 24px; font-weight: bold; text-align: center; color: #1e3a5f; margin: 20px 0 30px 0;">' + escapeHtml(line) + '</h1>';
-                } else if (line.match(/^(询问人|被询问人|时间|地点|一、|二、|三、|四、|五、)/)) {
-                    html += '<p style="font-weight: bold; color: #1e3a5f; margin-top: 15px;">' + escapeHtml(line) + '</p>';
-                } else {
-                    html += '<p style="text-indent: 2em; margin: 5px 0;">' + escapeHtml(line) + '</p>';
-                }
+            if (line.trim()) {
+                html += '<p>' + escapeHtml(line) + '</p>';
+            } else {
+                html += '<p>&nbsp;</p>';
             }
         });
+        html += '</div>';
         recordOutput.innerHTML = html;
+        recordOutput.classList.add('has-content');
         recordOutput.scrollTop = recordOutput.scrollHeight;
+        console.log('[工作流2] 文本已显示，行数:', lines.length);
     }
 
-    function showDocDownloadLink(url) {
-        var recordOutput = document.getElementById('record-output');
-        if (!recordOutput) return;
-        recordOutput.innerHTML = '<div style="text-align: center; padding: 40px 20px;">' +
-            '<div style="margin-bottom: 20px;">' +
-            '<i class="fas fa-file-word" style="font-size: 64px; color: #2b579a;"></i>' +
-            '</div>' +
-            '<h3 style="color: #333; margin-bottom: 20px;">笔录已生成</h3>' +
-            '<a href="' + escapeHtml(url) + '" target="_blank" ' +
-            'style="display: inline-block; padding: 14px 40px; background: linear-gradient(135deg, #2b579a, #1e3a5f); color: white; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 600;">' +
-            '<i class="fas fa-download" style="margin-right: 8px;"></i>下载文档</a></div>';
-    }
-
+    // 暴露公共接口供外部调用
     window.Workflow2Module = {
         send: sendToWorkflow2
     };

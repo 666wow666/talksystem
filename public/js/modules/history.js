@@ -1,5 +1,14 @@
 
+/**
+ * 历史记录模块
+ * 管理工作流1生成的推荐问题的历史记录，支持保存、恢复和清除
+ */
 (function() {
+    /**
+     * HTML转义函数，防止XSS攻击
+     * @param {string} text - 待转义的文本
+     * @returns {string} - 转义后的安全文本
+     */
     function escapeHtml(text) {
         if (!text) return '';
         var div = document.createElement('div');
@@ -7,6 +16,12 @@
         return div.innerHTML;
     }
 
+    /**
+     * 添加历史记录
+     * @param {string} timestamp - 时间戳
+     * @param {string} content - 原始内容
+     * @param {Object} parsed - 解析后的JSON对象
+     */
     function add(timestamp, content, parsed) {
         var historyList = document.getElementById('historyList');
         if (!historyList) return;
@@ -47,6 +62,9 @@
         save();
     }
 
+    /**
+     * 将历史记录保存到localStorage
+     */
     function save() {
         var historyList = document.getElementById('historyList');
         if (!historyList) return;
@@ -89,6 +107,9 @@
         }
     }
 
+    /**
+     * 从localStorage恢复历史记录到UI
+     */
     function restore() {
         var historyList = document.getElementById('historyList');
         if (!historyList) return;
@@ -136,6 +157,10 @@
         }
     }
 
+    /**
+     * 清除所有历史记录
+     * 需要用户确认，显示确认对话框
+     */
     function clear() {
         if (!confirm('确定要清除所有历史记录吗？此操作不可恢复。')) {
             return;
@@ -154,6 +179,7 @@
         }
     }
 
+    // 暴露公共接口供外部调用
     window.HistoryModule = {
         add: add,
         save: save,

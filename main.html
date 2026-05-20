@@ -202,26 +202,36 @@
     </div>
 
     <script>
-        window.APPID = '';
-        window.API_KEY = '';
-        var configLoaded = false;
-        var initPending = false;
-        
+        // ==================== 全局变量 ====================
+        window.APPID = '';           // 讯飞应用ID
+        window.API_KEY = '';         // 讯飞API密钥
+        var configLoaded = false;    // 配置加载状态标志
+        var initPending = false;     // 初始化等待标志
+
+        // ==================== 应用初始化系统 ====================
+
+        /**
+         * 初始化应用主函数
+         * 等待MainModule加载完成后调用其init方法
+         * 使用轮询机制确保模块加载完成
+         */
         function initializeApp() {
             if (window.MainModule && window.MainModule.init) {
-                if (!window.APPID || !window.API_KEY) {
-                    console.warn('⚠️ 讯飞配置未加载，录音功能可能无法使用');
-                }
                 window.MainModule.init();
                 console.log('✓ 应用初始化完成');
             } else {
+                // 如果模块未加载，设置标志并延迟100ms后重试
                 if (!initPending) {
                     initPending = true;
                     setTimeout(initializeApp, 100);
                 }
             }
         }
-        
+
+        /**
+         * 加载配置并初始化应用
+         * 从服务器获取讯飞配置信息，然后调用initializeApp
+         */
         function loadConfigAndInit() {
             fetch('/api/config')
                 .then(function(response) {
@@ -231,24 +241,28 @@
                     return response.json();
                 })
                 .then(function(config) {
+                    // 保存讯飞配置到全局变量
                     window.APPID = config.xfyunAppId || '';
                     window.API_KEY = config.xfyunApiKey || '';
                     configLoaded = true;
-                    if (window.APPID) {
-                        console.log('✓ 讯飞配置已加载 (AppID: ' + window.APPID + ')');
-                    } else {
-                        console.warn('⚠️ 讯飞 AppID 未配置，请检查 .env 文件');
-                    }
+                    console.log('✓ 配置已加载');
                 })
                 .catch(function(error) {
                     console.error('✗ 获取配置失败:', error.message);
-                    console.warn('⚠️ 将使用空配置启动，录音功能可能无法使用');
                 })
                 .finally(function() {
+                    // 无论成功失败都继续初始化
                     initializeApp();
                 });
         }
-            
+
+        // ==================== 认证检查系统 ====================
+
+        /**
+         * 页面加载时检查认证状态
+         * 验证用户是否已完成认证和基本信息填写
+         * 未认证则重定向到认证页面
+         */
         (function checkAuth() {
             var authed = localStorage.getItem('authed');
             var basicInfoFilled = localStorage.getItem('basicInfoFilled');
@@ -258,6 +272,7 @@
             }
         })();
         
+        // 启动配置加载和应用初始化
         loadConfigAndInit();
     </script>
 
@@ -405,43 +420,72 @@
     </div>
 
     <script>
+        // ==================== 按钮事件绑定 ====================
+
+        /**
+         * DOM加载完成后绑定按钮点击事件
+         * 包括：生成笔录、导出笔录、导出录音、基本信息按钮
+         */
         document.addEventListener('DOMContentLoaded', function() {
+            // 生成笔录按钮：获取录音文本并发送到工作流2
             document.getElementById('generate-record-btn').addEventListener('click', function() {
                 var recordText = document.getElementById('result').textContent.trim();
+                var recordOutput = document.getElementById('record-output');
+                var savedRecordContent = recordOutput.textContent.trim();
+                
+                // 笔录区已有内容，不重新生成
+                if (savedRecordContent && savedRecordContent !== '请在此输入') {
+                    return; // 静默处理，保持现有内容
+                }
+                
+                // 录音区也没有内容
                 if (!recordText) {
-                    alert('请先录音后再生成笔录');
+                    alert('请先录音或手动输入内容');
                     return;
                 }
+                
+                // 录音区有内容，使用录音内容生成笔录
                 var basicInfo = getBasicInfo();
                 if (window.sendToWorkflow2Manual) {
                     window.sendToWorkflow2Manual(recordText, basicInfo);
                 }
             });
 
+            // 导出笔录按钮：显示导出格式选择菜单
             document.getElementById('export-record-btn').addEventListener('click', function() {
                 showExportMenu();
             });
             
+            // 导出录音按钮：调用exportRecording导出录音文本
             document.getElementById('export-result-btn').addEventListener('click', function() {
                 if (window.exportRecording) {
                     window.exportRecording();
                 }
             });
 
+            // 基本信息按钮：打开基本信息编辑弹窗
             document.getElementById('basic-info-btn').addEventListener('click', function() {
                 openBasicInfoModal();
             });
         });
 
+        // ==================== 导出系统 ====================
+
+        /**
+         * 显示导出格式选择菜单
+         * 在按钮下方弹出菜单，提供.doc和.txt两种导出格式
+         */
         function showExportMenu() {
             var outputDiv = document.getElementById('record-output');
             var textContent = outputDiv.textContent.trim();
             
-            if (!textContent || textContent === '笔录内容将显示在这里' || textContent === '可点击生成笔录后编辑，或直接在此输入') {
-                alert('请先生成笔录内容');
+            // 检查是否有可导出的内容（包括手动输入的）
+            if (!textContent || textContent === '笔录内容将显示在这里' || textContent === '可点击生成笔录后编辑，或直接在此输入' || textContent === '请在此输入') {
+                alert('请先生成笔录内容或手动输入');
                 return;
             }
 
+            // 创建导出菜单
             var menu = document.createElement('div');
             menu.className = 'export-menu';
             menu.innerHTML = `
@@ -460,6 +504,7 @@
                 </div>
             `;
 
+            // 点击菜单外部关闭
             menu.addEventListener('click', function(e) {
                 if (e.target === menu) {
                     menu.remove();
@@ -469,6 +514,7 @@
             document.body.appendChild(menu);
             menu.classList.add('active');
 
+            // 延迟绑定点击外部关闭事件
             setTimeout(function() {
                 document.addEventListener('click', function closeMenu(e) {
                     if (!menu.contains(e.target) && e.target.id !== 'export-record-btn') {
@@ -479,16 +525,23 @@
             }, 10);
         }
 
-        function exportRecord(format) {
+        /**
+         * 执行笔录导出
+         * 根据格式参数调用不同的导出函数
+         * @param {string} format - 导出格式，'doc' 或 'txt'
+         */
+        async function exportRecord(format) {
             var outputDiv = document.getElementById('record-output');
             var content = outputDiv.innerHTML.trim();
             
             var textContent = outputDiv.textContent.trim();
-            if (!textContent || textContent === '笔录内容将显示在这里' || textContent === '可点击生成笔录后编辑，或直接在此输入') {
-                alert('请先生成笔录内容');
+            // 排除placeholder提示文字，只要有实际内容就支持导出（包括手动输入的）
+            if (!textContent || textContent === '笔录内容将显示在这里' || textContent === '可点击生成笔录后编辑，或直接在此输入' || textContent === '请在此输入') {
+                alert('请先生成笔录内容或手动输入');
                 return;
             }
 
+            // 生成文件名（格式：询问笔录_YYYYMMDD_HHmm.doc/txt）
             var now = new Date();
             var dateStr = now.getFullYear() + 
                           String(now.getMonth() + 1).padStart(2, '0') + 
@@ -497,36 +550,37 @@
                           String(now.getMinutes()).padStart(2, '0');
 
             if (format === 'doc') {
-                exportAsDoc(content, dateStr);
+                await exportAsDoc(content, dateStr);
             } else if (format === 'txt') {
                 exportAsTxt(outputDiv, dateStr);
             }
         }
 
+        /**
+         * 导出为Word文档格式（.docx）
+         * 使用HTML格式生成Word文档，保留原始格式
+         * @param {string} content - HTML内容
+         * @param {string} dateStr - 文件名日期部分
+         */
         function exportAsDoc(content, dateStr) {
-            var docContent = `
+            try {
+                var htmlContent = `
 <!DOCTYPE html>
-<html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
 <head>
 <meta charset="utf-8">
 <title>询问笔录</title>
 <style>
-body {
-    font-family: '仿宋', 'FangSong', 'SimSun', serif;
-    font-size: 14px;
-    line-height: 2;
-    margin: 45px 60px;
-    color: #000;
-}
-h1 {
-    text-align: center;
-    font-size: 26px;
-    font-weight: bold;
-    margin-bottom: 30px;
-    border-bottom: 2px solid #000;
-    padding-bottom: 15px;
-}
+body { font-family: '仿宋_GB2312', '仿宋', FangSong, SimSun; font-size: 16pt; line-height: 1.8; margin: 2cm 2.5cm 2cm 2cm; }
+h1 { text-align: center; font-size: 20pt; font-weight: bold; margin: 30px 0; }
 </style>
+<!--[if gte mso 9]>
+<xml>
+<w:WordDocument>
+<w:View>Print</w:View>
+</w:WordDocument>
+</xml>
+<![endif]-->
 </head>
 <body>
 <h1>询问笔录</h1>
@@ -534,29 +588,42 @@ ${content}
 </body>
 </html>`;
 
-            var blob = new Blob([docContent], { type: 'application/msword;charset=utf-8' });
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.href = url;
-            a.download = '询问笔录_' + dateStr + '.doc';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+                var blob = new Blob([htmlContent], { type: 'application/msword;charset=utf-8' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = '笔录_' + dateStr + '.doc';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('导出失败，请稍后重试');
+            }
         }
 
+        /**
+         * 导出为纯文本格式（.txt）
+         * 提取文本内容，去除空行后导出
+         * @param {HTMLElement} outputDiv - 笔录内容DOM元素
+         * @param {string} dateStr - 文件名日期部分
+         */
         function exportAsTxt(outputDiv, dateStr) {
             var textContent = outputDiv.textContent.trim();
             
+            // 按行分割，过滤空行
             var lines = textContent.split('\n').filter(function(line) {
                 return line.trim();
             });
             
+            // 重新组合文本
             var txtContent = '';
             lines.forEach(function(line) {
                 txtContent += line.trim() + '\n';
             });
 
+            // 创建Blob对象并触发下载
             var blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
             var url = URL.createObjectURL(blob);
             var a = document.createElement('a');
@@ -568,6 +635,15 @@ ${content}
             URL.revokeObjectURL(url);
         }
 
+        // ==================== 富文本编辑系统 ====================
+
+        /**
+         * 执行富文本编辑命令
+         * 使用 document.execCommand 实现常见的文本格式化功能
+         * @param {string} cmd - 编辑命令（如：bold、italic、underline等）
+         * @param {*} value - 命令参数值
+         * @param {HTMLElement} targetElement - 目标编辑区域元素
+         */
         function formatDoc(cmd, value, targetElement) {
             var target = targetElement || document.getElementById('record-output');
             if (target) {
@@ -576,6 +652,11 @@ ${content}
             }
         }
 
+        /**
+         * 监听笔录内容变化
+         * 更新 has-content 类以控制占位符显示/隐藏
+         * 同时自动保存内容到localStorage
+         */
         var recordOutput = document.getElementById('record-output');
         recordOutput.addEventListener('input', function() {
             var text = this.textContent.trim();
@@ -584,18 +665,41 @@ ${content}
             } else {
                 this.classList.remove('has-content');
             }
+            // 自动保存到localStorage（延迟500ms防止频繁保存）
+            if (window.recordSaveTimer) clearTimeout(window.recordSaveTimer);
+            window.recordSaveTimer = setTimeout(saveRecordContent, 500);
         });
 
+        /**
+         * 页面加载完成后加载保存的笔录内容
+         */
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRecordContent();
+        });
+
+        // ==================== 基本信息管理系统 ====================
+
+        /**
+         * 打开基本信息编辑弹窗
+         * 加载已保存的基本信息到显示区域，切换到只读模式
+         */
         function openBasicInfoModal() {
             loadBasicInfoToDisplay();
             document.getElementById('basicInfoModal').classList.add('active');
             switchToDisplayMode();
         }
 
+        /**
+         * 关闭基本信息编辑弹窗
+         */
         function closeBasicInfoModal() {
             document.getElementById('basicInfoModal').classList.remove('active');
         }
 
+        /**
+         * 加载基本信息到显示区域
+         * 从localStorage读取数据并填充到各个显示字段
+         */
         function loadBasicInfoToDisplay() {
             var savedInfo = localStorage.getItem('basicInfo');
             var info = savedInfo ? JSON.parse(savedInfo) : {};
@@ -610,10 +714,15 @@ ${content}
             document.getElementById('displayCaseRelation').textContent = info.caseRelation || '-';
         }
 
+        /**
+         * 切换到编辑模式
+         * 加载数据到表单字段，显示编辑界面
+         */
         function switchToEditMode() {
             var savedInfo = localStorage.getItem('basicInfo');
             var info = savedInfo ? JSON.parse(savedInfo) : {};
             
+            // 填充表单字段
             document.getElementById('editInquirerName').value = info.inquirerName || '';
             document.getElementById('editRespondentName').value = info.respondentName || '';
             document.getElementById('editIdCard').value = info.idCard || '';
@@ -622,13 +731,16 @@ ${content}
             document.getElementById('editOccupation').value = info.occupation || '';
             document.getElementById('editCaseRelation').value = info.caseRelation || '';
             
+            // 设置单选按钮状态
             var radios = document.getElementsByName('editPoliticalStatus');
             for (var i = 0; i < radios.length; i++) {
                 radios[i].checked = radios[i].value === (info.politicalStatus || '都不是');
             }
             
+            // 切换界面显示
             document.getElementById('infoDisplayArea').classList.add('hidden');
             document.getElementById('infoEditArea').classList.add('active');
+            // 更新底部按钮为取消和保存
             document.getElementById('infoFooter').innerHTML = `
                 <button class="basic-info-btn cancel" onclick="switchToDisplayMode()">
                     <i class="fas fa-times mr-1"></i>取消
@@ -639,17 +751,27 @@ ${content}
             `;
         }
 
+        /**
+         * 切换到只读显示模式
+         * 隐藏编辑区域，显示只读信息
+         */
         function switchToDisplayMode() {
             document.getElementById('infoDisplayArea').classList.remove('hidden');
             document.getElementById('infoEditArea').classList.remove('active');
+            // 更新底部按钮为修改
             document.getElementById('infoFooter').innerHTML = `
                 <button class="basic-info-btn edit" onclick="switchToEditMode()">
                     <i class="fas fa-edit mr-1"></i>修改
                 </button>
             `;
+            // 刷新显示数据
             loadBasicInfoToDisplay();
         }
 
+        /**
+         * 保存基本信息
+         * 收集表单数据，保存到localStorage，切换到显示模式
+         */
         function saveBasicInfo() {
             var formData = {
                 inquirerName: document.getElementById('editInquirerName').value.trim(),
@@ -662,27 +784,86 @@ ${content}
                 caseRelation: document.getElementById('editCaseRelation').value.trim()
             };
             
+            // 保存到localStorage
             localStorage.setItem('basicInfo', JSON.stringify(formData));
+            // 切换回显示模式
             switchToDisplayMode();
         }
 
+        /**
+         * 获取基本信息
+         * @returns {Object|null} 基本信息对象或null
+         */
         function getBasicInfo() {
             var savedInfo = localStorage.getItem('basicInfo');
             return savedInfo ? JSON.parse(savedInfo) : null;
         }
 
+        /**
+         * 获取笔录内容
+         * @returns {string} 笔录HTML内容
+         */
+        function getRecordContent() {
+            var recordOutput = document.getElementById('record-output');
+            return recordOutput ? recordOutput.innerHTML : '';
+        }
+
+        /**
+         * 保存笔录内容到localStorage
+         */
+        function saveRecordContent() {
+            var content = getRecordContent();
+            if (content) {
+                localStorage.setItem('recordContent', content);
+            }
+        }
+
+        /**
+         * 从localStorage加载笔录内容
+         */
+        function loadRecordContent() {
+            var savedContent = localStorage.getItem('recordContent');
+            if (savedContent) {
+                var recordOutput = document.getElementById('record-output');
+                if (recordOutput) {
+                    recordOutput.innerHTML = savedContent;
+                    // 如果有内容，隐藏占位符
+                    var placeholder = recordOutput.querySelector('.record-placeholder');
+                    if (placeholder && recordOutput.textContent.trim()) {
+                        placeholder.style.display = 'none';
+                    }
+                }
+            }
+        }
+
+        // ==================== 历史记录面板系统 ====================
+
+        /**
+         * 打开历史记录面板
+         */
         function openHistoryPanel() {
             document.getElementById('historyPanel').classList.add('active');
             document.getElementById('historyOverlay').classList.add('active');
         }
 
+        /**
+         * 关闭历史记录面板
+         */
         function closeHistoryPanel() {
             document.getElementById('historyPanel').classList.remove('active');
             document.getElementById('historyOverlay').classList.remove('active');
         }
 
-        var fullscreenModal = null;
+        // ==================== 全屏功能系统 ====================
 
+        var fullscreenModal = null;  // 全屏模态框引用
+        var originalParent = null;   // 保存原元素的父元素
+        var originalNextSibling = null; // 保存原元素的下一个兄弟元素
+
+        /**
+         * 打开笔录区域全屏模式
+         * 直接移动原编辑区域到全屏模态框，避免同步问题
+         */
         function openWorkflow2Fullscreen() {
             var recordWrapper = document.querySelector('.record-wrapper');
             if (!recordWrapper) return;
@@ -690,16 +871,16 @@ ${content}
             var originalRecordOutput = document.getElementById('record-output');
             var toolbar = recordWrapper.querySelector('.record-toolbar');
             
+            // 保存原元素的位置信息
+            originalParent = originalRecordOutput.parentNode;
+            originalNextSibling = originalRecordOutput.nextSibling;
+            
+            // 创建全屏模态框
             fullscreenModal = document.createElement('div');
             fullscreenModal.className = 'fullscreen-modal';
             fullscreenModal.id = 'fullscreenModal';
             
-            var toolbarClone = toolbar.cloneNode(true);
-            var toolbarBtns = toolbarClone.querySelectorAll('button');
-            toolbarBtns.forEach(function(btn, index) {
-                btn.onclick = null;
-            });
-            
+            // 构建全屏模态框HTML
             fullscreenModal.innerHTML = 
                 '<div class="fullscreen-content wf2-fullscreen">' +
                     '<div class="fullscreen-header">' +
@@ -709,66 +890,73 @@ ${content}
                         '</button>' +
                     '</div>' +
                     '<div class="wf2-fullscreen-body">' +
-                        '<div class="record-toolbar"></div>' +
-                        '<div id="record-output" class="record-output wf2-record-output" contenteditable="true"></div>' +
+                        '<div class="record-toolbar-fullscreen"></div>' +
+                        '<div class="record-output-container"></div>' +
                     '</div>' +
                 '</div>';
             
-            var fullscreenToolbar = fullscreenModal.querySelector('.record-toolbar');
-            var fullscreenRecordOutput = fullscreenModal.querySelector('.record-output');
-            fullscreenToolbar.innerHTML = toolbar.innerHTML;
-            fullscreenRecordOutput.innerHTML = originalRecordOutput.innerHTML;
-            
-            var placeholder = originalRecordOutput.querySelector('.record-placeholder');
-            if (placeholder) {
-                fullscreenRecordOutput.innerHTML = '';
-                fullscreenRecordOutput.appendChild(placeholder.cloneNode(true));
-            }
-            
-            fullscreenRecordOutput.className = originalRecordOutput.className + ' wf2-record-output';
-            
-            fullscreenRecordOutput.addEventListener('input', function() {
-                originalRecordOutput.innerHTML = this.innerHTML;
-                var originalPlaceholder = originalRecordOutput.querySelector('.record-placeholder');
-                var fullscreenPlaceholder = fullscreenRecordOutput.querySelector('.record-placeholder');
-                if (originalPlaceholder && fullscreenPlaceholder) {
-                    if (fullscreenRecordOutput.textContent.trim()) {
-                        fullscreenPlaceholder.style.display = 'none';
-                        originalPlaceholder.style.display = 'none';
-                    } else {
-                        fullscreenPlaceholder.style.display = '';
-                        originalPlaceholder.style.display = '';
-                    }
-                }
-            });
-            
-            rebindToolbarButtons(fullscreenToolbar, fullscreenRecordOutput);
-            
+            // 显示模态框
             document.body.appendChild(fullscreenModal);
+            
+            // 移动工具栏和编辑区域到全屏模态框
+            var fullscreenToolbarContainer = fullscreenModal.querySelector('.record-toolbar-fullscreen');
+            var fullscreenOutputContainer = fullscreenModal.querySelector('.record-output-container');
+            
+            // 克隆工具栏（保持原工具栏在原位置）
+            var toolbarClone = toolbar.cloneNode(true);
+            fullscreenToolbarContainer.appendChild(toolbarClone);
+            
+            // 移动原编辑区域到全屏模态框
+            fullscreenOutputContainer.appendChild(originalRecordOutput);
+            
+            // 重新绑定工具栏按钮到原编辑区域
+            rebindToolbarButtons(toolbarClone, originalRecordOutput);
+            
+            // 点击背景关闭
             fullscreenModal.addEventListener('click', function(e) {
                 if (e.target === fullscreenModal) closeWorkflow2Fullscreen();
             });
+            
             requestAnimationFrame(function() {
                 fullscreenModal.classList.add('active');
             });
         }
 
+        /**
+         * 关闭笔录全屏模式
+         * 将编辑区域移回原位置
+         */
         function closeWorkflow2Fullscreen() {
             var modal = document.getElementById('fullscreenModal');
-            if (modal) {
-                var fullscreenRecordOutput = modal.querySelector('.record-output');
-                var originalRecordOutput = document.getElementById('record-output');
+            if (modal && originalParent) {
+                var recordOutput = document.getElementById('record-output');
                 
-                if (fullscreenRecordOutput && originalRecordOutput) {
-                    originalRecordOutput.innerHTML = fullscreenRecordOutput.innerHTML;
+                // 将编辑区域移回原位置
+                if (originalNextSibling) {
+                    originalParent.insertBefore(recordOutput, originalNextSibling);
+                } else {
+                    originalParent.appendChild(recordOutput);
                 }
                 
+                // 移除模态框
                 modal.classList.remove('active');
                 setTimeout(function() { modal.remove(); }, 300);
+                
+                // 清除保存的引用
+                fullscreenModal = null;
+                originalParent = null;
+                originalNextSibling = null;
             }
         }
 
+        /**
+         * 重新绑定工具栏按钮事件
+         * 将原始工具栏的 onclick 属性转换为实际的点击事件
+         * @param {HTMLElement} toolbar - 工具栏元素
+         * @param {HTMLElement} targetElement - 目标编辑区域
+         */
         function rebindToolbarButtons(toolbar, targetElement) {
+            // 绑定按钮事件
             var buttons = toolbar.querySelectorAll('button');
             buttons.forEach(function(btn) {
                 var onclick = btn.getAttribute('onclick');
@@ -783,6 +971,7 @@ ${content}
                 }
             });
             
+            // 绑定下拉框事件
             var selects = toolbar.querySelectorAll('select');
             selects.forEach(function(select) {
                 var onchange = select.getAttribute('onchange');
@@ -802,10 +991,16 @@ ${content}
             });
         }
 
+        /**
+         * 打开面板全屏模式（通用）
+         * @param {string} panelId - 面板ID
+         * @param {string} title - 标题
+         */
         function openFullscreen(panelId, title) {
             var panel = document.getElementById(panelId);
             if (!panel) return;
             
+            // 创建全屏模态框
             fullscreenModal = document.createElement('div');
             fullscreenModal.className = 'fullscreen-modal';
             fullscreenModal.id = 'fullscreenModal';
@@ -820,6 +1015,7 @@ ${content}
                     '<div class="fullscreen-body">' + panel.innerHTML + '</div>' +
                 '</div>';
             
+            // 显示模态框
             document.body.appendChild(fullscreenModal);
             fullscreenModal.addEventListener('click', function(e) {
                 if (e.target === fullscreenModal) closeFullscreen();
@@ -829,6 +1025,9 @@ ${content}
             });
         }
 
+        /**
+         * 关闭全屏模式（通用）
+         */
         function closeFullscreen() {
             var modal = document.getElementById('fullscreenModal');
             if (modal) {
@@ -837,6 +1036,7 @@ ${content}
             }
         }
 
+        // 暴露全局函数供外部调用
         window.openFullscreen = openFullscreen;
         window.closeFullscreen = closeFullscreen;
         window.openWorkflow2Fullscreen = openWorkflow2Fullscreen;

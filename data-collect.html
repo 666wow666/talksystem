@@ -297,43 +297,63 @@
     </div>
 
     <script>
-        // 提交表单
+        // ==================== 表单处理系统 ====================
+
+        /**
+         * 表单提交处理函数
+         * 收集所有表单数据，保存到localStorage，并跳转到主页面
+         * @param {Event} e - 表单提交事件
+         */
         document.getElementById('infoForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+            e.preventDefault();  // 阻止表单默认提交行为
             
             // 收集表单数据
             const formData = {
-                inquirerName: document.getElementById('inquirerName').value.trim(),
-                respondentName: document.getElementById('respondentName').value.trim(),
-                idCard: document.getElementById('idCard').value.trim(),
-                address: document.getElementById('address').value.trim(),
-                phone: document.getElementById('phone').value.trim(),
-                occupation: document.getElementById('occupation').value.trim(),
-                politicalStatus: document.querySelector('input[name="politicalStatus"]:checked').value,
-                caseRelation: document.getElementById('caseRelation').value.trim(),
-                caseInfo: document.getElementById('caseInfo').value.trim()
+                inquirerName: document.getElementById('inquirerName').value.trim(),      // 询问人姓名
+                respondentName: document.getElementById('respondentName').value.trim(),  // 被询问人姓名
+                idCard: document.getElementById('idCard').value.trim(),                  // 身份证号
+                address: document.getElementById('address').value.trim(),                // 住址
+                phone: document.getElementById('phone').value.trim(),                   // 联系电话
+                occupation: document.getElementById('occupation').value.trim(),          // 职业
+                politicalStatus: document.querySelector('input[name="politicalStatus"]:checked').value,  // 政治面貌
+                caseRelation: document.getElementById('caseRelation').value.trim(),      // 与案件关系
+                caseInfo: document.getElementById('caseInfo').value.trim()                // 警情信息
             };
             
-            // 保存到localStorage
+            // 保存到localStorage（持久化存储）
             localStorage.setItem('basicInfo', JSON.stringify(formData));
+            // 标记基本信息已填写
             localStorage.setItem('basicInfoFilled', 'true');
             
             // 跳转到主页面
             window.location.href = 'main.html';
         });
 
-        // 页面加载时检查是否已认证，未认证则跳转到认证页
+        // ==================== 认证检查系统 ====================
+
+        /**
+         * 页面加载时检查认证状态
+         * 如果用户未认证（authed !== 'true'），则重定向到认证页面
+         * 这是应用的安全检查点，确保用户必须先登录
+         */
         window.addEventListener('load', function() {
             if (localStorage.getItem('authed') !== 'true') {
                 window.location.href = 'auth.html';
             }
         });
 
-        // 页面加载时检查是否已有数据
+        // ==================== 数据恢复系统 ====================
+
+        /**
+         * 页面加载时恢复已保存的数据
+         * 如果localStorage中存有基本信息，则填充到表单中
+         * 支持修改已有信息，实现数据的持久化和复用
+         */
         window.addEventListener('load', function() {
             const savedInfo = localStorage.getItem('basicInfo');
             if (savedInfo) {
                 const data = JSON.parse(savedInfo);
+                // 填充文本输入框
                 document.getElementById('inquirerName').value = data.inquirerName || '';
                 document.getElementById('respondentName').value = data.respondentName || '';
                 document.getElementById('idCard').value = data.idCard || '';
@@ -343,11 +363,12 @@
                 document.getElementById('caseRelation').value = data.caseRelation || '';
                 document.getElementById('caseInfo').value = data.caseInfo || '';
                 
+                // 恢复单选按钮状态
                 if (data.politicalStatus) {
                     const radios = document.querySelectorAll('input[name="politicalStatus"]');
                     radios.forEach(radio => {
                         if (radio.value === data.politicalStatus) {
-                            radio.checked = true;
+                            radio.checked = true;  // 设置匹配的单选按钮为选中状态
                         }
                     });
                 }
