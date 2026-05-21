@@ -244,30 +244,43 @@
 
                     <div class="form-row">
                         <div class="form-group">
+                            <label class="form-label">户籍所在地</label>
+                            <input type="text" class="form-input" id="registeredAddress" placeholder="请输入户籍所在地">
+                        </div>
+                        <div class="form-group">
                             <label class="form-label">职业</label>
                             <input type="text" class="form-input" id="occupation" placeholder="请输入职业">
                         </div>
+                    </div>
+
+                    <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">与案件关系</label>
                             <input type="text" class="form-input" id="caseRelation" placeholder="如：嫌疑人、证人、当事人等">
                         </div>
+                        <div class="form-group">
+                            <label class="form-label">是否为人大代表</label>
+                            <div class="radio-group">
+                                <div class="radio-item">
+                                    <input type="radio" name="isNPCDeputy" id="isNPCDeputyYes" value="是">
+                                    <label for="isNPCDeputyYes">是</label>
+                                </div>
+                                <div class="radio-item">
+                                    <input type="radio" name="isNPCDeputy" id="isNPCDeputyNo" value="否" checked>
+                                    <label for="isNPCDeputyNo">否</label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">政治面貌</label>
-                        <div class="radio-group">
-                            <div class="radio-item">
-                                <input type="radio" name="politicalStatus" id="status1" value="共产党员">
-                                <label for="status1">共产党员</label>
-                            </div>
-                            <div class="radio-item">
-                                <input type="radio" name="politicalStatus" id="status2" value="政协委员">
-                                <label for="status2">政协委员</label>
-                            </div>
-                            <div class="radio-item">
-                                <input type="radio" name="politicalStatus" id="status3" value="都不是" checked>
-                                <label for="status3">都不是</label>
-                            </div>
+                    <div class="form-row" id="birthAgeRow" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">出生日期</label>
+                            <input type="text" class="form-input" id="birthDate" readonly placeholder="自动从身份证号推算">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">年龄</label>
+                            <input type="text" class="form-input" id="age" readonly placeholder="自动从身份证号推算">
                         </div>
                     </div>
 
@@ -297,6 +310,57 @@
     </div>
 
     <script>
+        // ==================== 身份证号处理系统 ====================
+
+        /**
+         * 从身份证号提取出生日期和计算年龄
+         * @param {string} idCard - 18位身份证号
+         * @returns {Object} - 包含birthDate和age的对象
+         */
+        function parseIdCard(idCard) {
+            if (!idCard || idCard.length !== 18) {
+                return { birthDate: '', age: '' };
+            }
+            
+            // 提取出生日期（第7-14位）
+            const year = idCard.substring(6, 10);
+            const month = idCard.substring(10, 12);
+            const day = idCard.substring(12, 14);
+            const birthDateStr = year + '年' + month + '月' + day + '日';
+            
+            // 计算年龄
+            const birthDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            
+            return { birthDate: birthDateStr, age: age + '岁' };
+        }
+
+        /**
+         * 处理身份证号输入变化
+         */
+        function handleIdCardChange() {
+            const idCard = document.getElementById('idCard').value.trim();
+            const birthAgeRow = document.getElementById('birthAgeRow');
+            const birthDateInput = document.getElementById('birthDate');
+            const ageInput = document.getElementById('age');
+            
+            if (idCard.length === 18) {
+                const result = parseIdCard(idCard);
+                birthDateInput.value = result.birthDate;
+                ageInput.value = result.age;
+                birthAgeRow.style.display = 'flex';
+            } else {
+                birthDateInput.value = '';
+                ageInput.value = '';
+                birthAgeRow.style.display = 'none';
+            }
+        }
+
         // ==================== 表单处理系统 ====================
 
         /**
@@ -313,11 +377,14 @@
                 respondentName: document.getElementById('respondentName').value.trim(),  // 被询问人姓名
                 idCard: document.getElementById('idCard').value.trim(),                  // 身份证号
                 address: document.getElementById('address').value.trim(),                // 住址
+                registeredAddress: document.getElementById('registeredAddress').value.trim(),  // 户籍所在地
                 phone: document.getElementById('phone').value.trim(),                   // 联系电话
                 occupation: document.getElementById('occupation').value.trim(),          // 职业
-                politicalStatus: document.querySelector('input[name="politicalStatus"]:checked').value,  // 政治面貌
+                isNPCDeputy: document.querySelector('input[name="isNPCDeputy"]:checked').value,  // 是否为人大代表
                 caseRelation: document.getElementById('caseRelation').value.trim(),      // 与案件关系
-                caseInfo: document.getElementById('caseInfo').value.trim()                // 警情信息
+                caseInfo: document.getElementById('caseInfo').value.trim(),              // 警情信息
+                birthDate: document.getElementById('birthDate').value.trim(),            // 出生日期
+                age: document.getElementById('age').value.trim()                        // 年龄
             };
             
             // 保存到localStorage（持久化存储）
@@ -358,21 +425,30 @@
                 document.getElementById('respondentName').value = data.respondentName || '';
                 document.getElementById('idCard').value = data.idCard || '';
                 document.getElementById('address').value = data.address || '';
+                document.getElementById('registeredAddress').value = data.registeredAddress || '';
                 document.getElementById('phone').value = data.phone || '';
                 document.getElementById('occupation').value = data.occupation || '';
                 document.getElementById('caseRelation').value = data.caseRelation || '';
                 document.getElementById('caseInfo').value = data.caseInfo || '';
+                document.getElementById('birthDate').value = data.birthDate || '';
+                document.getElementById('age').value = data.age || '';
                 
                 // 恢复单选按钮状态
-                if (data.politicalStatus) {
-                    const radios = document.querySelectorAll('input[name="politicalStatus"]');
+                if (data.isNPCDeputy) {
+                    const radios = document.querySelectorAll('input[name="isNPCDeputy"]');
                     radios.forEach(radio => {
-                        if (radio.value === data.politicalStatus) {
+                        if (radio.value === data.isNPCDeputy) {
                             radio.checked = true;  // 设置匹配的单选按钮为选中状态
                         }
                     });
                 }
+                
+                // 处理身份证号，显示/隐藏出生日期和年龄
+                handleIdCardChange();
             }
+            
+            // 绑定身份证号输入事件
+            document.getElementById('idCard').addEventListener('input', handleIdCardChange);
         });
     </script>
 </body>

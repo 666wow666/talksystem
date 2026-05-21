@@ -14,20 +14,22 @@ class DeepSeekService extends BaseAIService {
     return this.apiKey;
   }
 
-  getModel() {
-    if (!this.model) {
-      this.model = config.deepseek.model || 'deepseek-chat';
+  getModel(workflowNum = null) {
+    if (workflowNum === 1) {
+      return config.deepseek.workflow1Model || config.deepseek.model || 'deepseek-chat';
+    } else if (workflowNum === 2) {
+      return config.deepseek.workflow2Model || config.deepseek.model || 'deepseek-chat';
     }
-    return this.model;
+    return config.deepseek.model || 'deepseek-chat';
   }
 
   getModelName() {
     return 'deepseek';
   }
 
-  async executeRequest(messages, temperature) {
+  async executeRequest(messages, temperature, workflowNum = null) {
     const apiKey = this.getApiKey();
-    const model = this.getModel();
+    const model = this.getModel(workflowNum);
 
     if (!apiKey) {
       throw new Error('DEEPSEEK_API_KEY 未配置，请检查 .env 文件');

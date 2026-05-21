@@ -21,11 +21,13 @@ class ErnieService extends BaseAIService {
     return this.secretKey;
   }
 
-  getModel() {
-    if (!this.model) {
-      this.model = config.ernie.model || 'ernie-4.0-turbo';
+  getModel(workflowNum = null) {
+    if (workflowNum === 1) {
+      return config.ernie.workflow1Model || config.ernie.model || 'ernie-4.0-turbo';
+    } else if (workflowNum === 2) {
+      return config.ernie.workflow2Model || config.ernie.model || 'ernie-4.0-turbo';
     }
-    return this.model;
+    return config.ernie.model || 'ernie-4.0-turbo';
   }
 
   getModelName() {
@@ -60,7 +62,7 @@ class ErnieService extends BaseAIService {
     return this.accessToken;
   }
 
-  async executeRequest(messages, temperature) {
+  async executeRequest(messages, temperature, workflowNum = null) {
     const apiKey = this.getApiKey();
     const secretKey = this.getSecretKey();
 
@@ -69,7 +71,7 @@ class ErnieService extends BaseAIService {
     }
 
     const accessToken = await this.getAccessToken();
-    const model = this.getModel();
+    const model = this.getModel(workflowNum);
 
     const response = await fetch(`${this.baseURL}/${model}`, {
       method: 'POST',

@@ -14,20 +14,22 @@ class GLMService extends BaseAIService {
     return this.apiKey;
   }
 
-  getModel() {
-    if (!this.model) {
-      this.model = config.glm.model || 'glm-4-flash';
+  getModel(workflowNum = null) {
+    if (workflowNum === 1) {
+      return config.glm.workflow1Model || config.glm.model || 'glm-4-flash';
+    } else if (workflowNum === 2) {
+      return config.glm.workflow2Model || config.glm.model || 'glm-4-flash';
     }
-    return this.model;
+    return config.glm.model || 'glm-4-flash';
   }
 
   getModelName() {
     return 'glm';
   }
 
-  async executeRequest(messages, temperature) {
+  async executeRequest(messages, temperature, workflowNum = null) {
     const apiKey = this.getApiKey();
-    const model = this.getModel();
+    const model = this.getModel(workflowNum);
 
     if (!apiKey) {
       throw new Error('GLM_API_KEY 未配置，请检查 .env 文件');

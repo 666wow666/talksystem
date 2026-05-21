@@ -1,11 +1,3 @@
-# 安装依赖
-Write-Host "downloading....."
-npm install
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "npm install fail" -ForegroundColor Red
-    exit 1
-}
 
 # 启动服务
 Write-Host "starting"

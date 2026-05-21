@@ -14,20 +14,22 @@ class KimiService extends BaseAIService {
     return this.apiKey;
   }
 
-  getModel() {
-    if (!this.model) {
-      this.model = config.kimi.model || 'moonshot-v1-8k';
+  getModel(workflowNum = null) {
+    if (workflowNum === 1) {
+      return config.kimi.workflow1Model || config.kimi.model || 'moonshot-v1-8k';
+    } else if (workflowNum === 2) {
+      return config.kimi.workflow2Model || config.kimi.model || 'moonshot-v1-8k';
     }
-    return this.model;
+    return config.kimi.model || 'moonshot-v1-8k';
   }
 
   getModelName() {
     return 'kimi';
   }
 
-  async executeRequest(messages, temperature) {
+  async executeRequest(messages, temperature, workflowNum = null) {
     const apiKey = this.getApiKey();
-    const model = this.getModel();
+    const model = this.getModel(workflowNum);
 
     if (!apiKey) {
       throw new Error('KIMI_API_KEY 未配置，请检查 .env 文件');

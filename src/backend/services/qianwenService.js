@@ -14,20 +14,22 @@ class QianwenService extends BaseAIService {
     return this.apiKey;
   }
 
-  getModel() {
-    if (!this.model) {
-      this.model = config.qianwen.model || 'qwen3.5-32b';
+  getModel(workflowNum = null) {
+    if (workflowNum === 1) {
+      return config.qianwen.workflow1Model || config.qianwen.model || 'qwen3.5-32b';
+    } else if (workflowNum === 2) {
+      return config.qianwen.workflow2Model || config.qianwen.model || 'qwen3.5-32b';
     }
-    return this.model;
+    return config.qianwen.model || 'qwen3.5-32b';
   }
 
   getModelName() {
     return 'qianwen';
   }
 
-  async executeRequest(messages, temperature) {
+  async executeRequest(messages, temperature, workflowNum = null) {
     const apiKey = this.getApiKey();
-    const model = this.getModel();
+    const model = this.getModel(workflowNum);
 
     if (!apiKey) {
       throw new Error('QIANWEN_API_KEY 未配置，请检查 .env 文件');

@@ -24,8 +24,8 @@ router.post('/:workflowNum', async (req, res) => {
       return res.status(400).json({ error: "不支持的工作流编号" });
     }
 
-    const currentModel = modelSelector.getCurrentModel();
-    console.log('当前模型:', currentModel);
+    const currentModel = modelSelector.getModelForWorkflow(workflowNum);
+    console.log('工作流' + workflowNum + '模型:', currentModel);
     
     const aiService = AIServiceFactory.getService(currentModel);
     
@@ -72,8 +72,8 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: "缺少 message 字段" });
     }
 
-    const currentModel = modelSelector.getCurrentModel();
-    console.log('当前模型:', currentModel);
+    const currentModel = modelSelector.getModelForWorkflow(1);
+    console.log('工作流1模型:', currentModel);
     
     const aiService = AIServiceFactory.getService(currentModel);
     

@@ -14,20 +14,22 @@ class NvidiaService extends BaseAIService {
     return this.apiKey;
   }
 
-  getModel() {
-    if (!this.model) {
-      this.model = config.nvidia.model || 'deepseek-ai/deepseek-v4-flash';
+  getModel(workflowNum = null) {
+    if (workflowNum === 1) {
+      return config.nvidia.workflow1Model || config.nvidia.model || 'deepseek-ai/deepseek-v4-flash';
+    } else if (workflowNum === 2) {
+      return config.nvidia.workflow2Model || config.nvidia.model || 'deepseek-ai/deepseek-v4-flash';
     }
-    return this.model;
+    return config.nvidia.model || 'deepseek-ai/deepseek-v4-flash';
   }
 
   getModelName() {
     return 'nvidia';
   }
 
-  async executeRequest(messages, temperature) {
+  async executeRequest(messages, temperature, workflowNum = null) {
     const apiKey = this.getApiKey();
-    const model = this.getModel();
+    const model = this.getModel(workflowNum);
 
     if (!apiKey) {
       throw new Error('NVIDIA_API_KEY 未配置，请检查 .env 文件');

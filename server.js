@@ -91,32 +91,35 @@ app.get('/api/config', (req, res) => {
 });
 
 app.get('/api/models', (req, res) => {
-  const currentModel = modelSelector.getCurrentModel();
+  const workflow1Model = modelSelector.getModelForWorkflow(1);
+  const workflow2Model = modelSelector.getModelForWorkflow(2);
   const models = [];
   
-  if (config.glm.apiKey) models.push({ name: 'glm', displayName: '智谱GLM', configured: true, current: currentModel === 'glm' });
+  if (config.glm.apiKey) models.push({ name: 'glm', displayName: '智谱GLM', configured: true, current: workflow1Model === 'glm' });
   else models.push({ name: 'glm', displayName: '智谱GLM', configured: false, current: false });
   
-  if (config.deepseek.apiKey) models.push({ name: 'deepseek', displayName: 'DeepSeek', configured: true, current: currentModel === 'deepseek' });
+  if (config.deepseek.apiKey) models.push({ name: 'deepseek', displayName: 'DeepSeek', configured: true, current: workflow1Model === 'deepseek' });
   else models.push({ name: 'deepseek', displayName: 'DeepSeek', configured: false, current: false });
   
-  if (config.doubao.apiKey) models.push({ name: 'doubao', displayName: '豆包', configured: true, current: currentModel === 'doubao' });
+  if (config.doubao.apiKey) models.push({ name: 'doubao', displayName: '豆包', configured: true, current: workflow1Model === 'doubao' });
   else models.push({ name: 'doubao', displayName: '豆包', configured: false, current: false });
   
-  if (config.kimi.apiKey) models.push({ name: 'kimi', displayName: 'Kimi', configured: true, current: currentModel === 'kimi' });
+  if (config.kimi.apiKey) models.push({ name: 'kimi', displayName: 'Kimi', configured: true, current: workflow1Model === 'kimi' });
   else models.push({ name: 'kimi', displayName: 'Kimi', configured: false, current: false });
   
-  if (config.qianwen.apiKey) models.push({ name: 'qianwen', displayName: '千问', configured: true, current: currentModel === 'qianwen' });
+  if (config.qianwen.apiKey) models.push({ name: 'qianwen', displayName: '千问', configured: true, current: workflow1Model === 'qianwen' });
   else models.push({ name: 'qianwen', displayName: '千问', configured: false, current: false });
   
-  if (config.ernie.apiKey && config.ernie.secretKey) models.push({ name: 'ernie', displayName: '文心一言', configured: true, current: currentModel === 'ernie' });
+  if (config.ernie.apiKey && config.ernie.secretKey) models.push({ name: 'ernie', displayName: '文心一言', configured: true, current: workflow1Model === 'ernie' });
   else models.push({ name: 'ernie', displayName: '文心一言', configured: false, current: false });
   
-  if (config.nvidia.apiKey) models.push({ name: 'nvidia', displayName: 'NVIDIA', configured: true, current: currentModel === 'nvidia' });
+  if (config.nvidia.apiKey) models.push({ name: 'nvidia', displayName: 'NVIDIA', configured: true, current: workflow1Model === 'nvidia' });
   else models.push({ name: 'nvidia', displayName: 'NVIDIA', configured: false, current: false });
   
   res.json({
-    currentModel: currentModel,
+    workflow1Model: workflow1Model,
+    workflow2Model: workflow2Model,
+    currentModel: workflow1Model,
     models: models
   });
 });
@@ -130,9 +133,9 @@ async function startServer() {
     deepseek: 'DeepSeek',
     doubao: '豆包',
     kimi: 'Kimi',
-    qianwen: '千问',
     ernie: '文心一言',
-    nvidia: 'NVIDIA'
+    nvidia: 'NVIDIA',
+    qianwen: '千问'
   };
   
   if (config.enableTerminalSelection) {
@@ -142,10 +145,25 @@ async function startServer() {
     console.log('📋 终端模型选择已禁用，直接使用默认模型\n');
   }
   
-  const currentModel = modelSelector.getCurrentModel();
+  const workflow1Model = modelSelector.getModelForWorkflow(1);
+  const workflow2Model = modelSelector.getModelForWorkflow(2);
+  
+  function getModelVersion(modelName, workflowNum) {
+    const modelConfig = config[modelName];
+    if (!modelConfig) return '';
+    if (workflowNum === 1 && modelConfig.workflow1Model) {
+      return ` (${modelConfig.workflow1Model})`;
+    } else if (workflowNum === 2 && modelConfig.workflow2Model) {
+      return ` (${modelConfig.workflow2Model})`;
+    } else if (modelConfig.model) {
+      return ` (${modelConfig.model})`;
+    }
+    return '';
+  }
   
   console.log(`\n🚀 服务器运行在 http://localhost:${port}`);
-  console.log(`🤖 当前AI模型: ${modelNames[currentModel] || currentModel}`);
+  console.log(`🤖 工作流1（推荐问题）模型: ${modelNames[workflow1Model] || workflow1Model}${getModelVersion(workflow1Model, 1)}`);
+  console.log(`🤖 工作流2（笔录生成）模型: ${modelNames[workflow2Model] || workflow2Model}${getModelVersion(workflow2Model, 2)}`);
   console.log('');
   
   app.listen(port, () => {

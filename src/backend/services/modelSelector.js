@@ -13,7 +13,8 @@ const MODEL_DISPLAY_NAMES = {
 
 class ModelSelector {
   constructor() {
-    this.currentModel = null;
+    this.workflow1Model = null;
+    this.workflow2Model = null;
     this.configuredModels = this.getConfiguredModels();
   }
 
@@ -114,39 +115,67 @@ class ModelSelector {
       console.log('  └─────────────────────────────────────────┘');
       console.log('');
 
-      const question = `  请选择模型 [1-${this.configuredModels.length}] (默认: ${defaultModelName}): `;
+      // 选择工作流1的模型
+      const question1 = `  请选择工作流1（推荐问题）模型 [1-${this.configuredModels.length}] (默认: ${defaultModelName}): `;
       
-      rl.question(question, (answer) => {
-        rl.close();
-        
-        const trimmed = answer.trim();
-        
-        let selectedIndex = defaultIndex >= 0 ? defaultIndex : 0;
-        
-        if (trimmed !== '') {
-          const num = parseInt(trimmed);
+      rl.question(question1, (answer1) => {
+        let selectedIndex1 = defaultIndex >= 0 ? defaultIndex : 0;
+        if (answer1.trim() !== '') {
+          const num = parseInt(answer1.trim());
           if (!isNaN(num) && num >= 1 && num <= this.configuredModels.length) {
-            selectedIndex = num - 1;
+            selectedIndex1 = num - 1;
           }
         }
-        
-        const selected = this.configuredModels[selectedIndex];
-        this.currentModel = selected.id;
-        
+        const selected1 = this.configuredModels[selectedIndex1];
+        this.workflow1Model = selected1.id;
+        console.log(`  ✓ 工作流1已选择: ${selected1.name}`);
         console.log('');
-        console.log(`  ✓ 已选择: ${selected.name}`);
-        console.log('');
+
+        // 选择工作流2的模型
+        const question2 = `  请选择工作流2（笔录生成）模型 [1-${this.configuredModels.length}] (默认: ${defaultModelName}): `;
         
-        resolve(selected.id);
+        rl.question(question2, (answer2) => {
+          rl.close();
+          
+          let selectedIndex2 = defaultIndex >= 0 ? defaultIndex : 0;
+          if (answer2.trim() !== '') {
+            const num = parseInt(answer2.trim());
+            if (!isNaN(num) && num >= 1 && num <= this.configuredModels.length) {
+              selectedIndex2 = num - 1;
+            }
+          }
+          
+          const selected2 = this.configuredModels[selectedIndex2];
+          this.workflow2Model = selected2.id;
+          
+          console.log('');
+          console.log(`  ✓ 工作流1: ${selected1.name}`);
+          console.log(`  ✓ 工作流2: ${selected2.name}`);
+          console.log('');
+          
+          resolve({ workflow1: selected1.id, workflow2: selected2.id });
+        });
       });
     });
   }
 
-  getCurrentModel() {
-    if (this.currentModel) {
-      return this.currentModel;
+  getModelForWorkflow(workflowNum) {
+    if (workflowNum === 1) {
+      if (this.workflow1Model) {
+        return this.workflow1Model;
+      }
+      return config.workflow1Model || config.defaultModel || 'glm';
+    } else if (workflowNum === 2) {
+      if (this.workflow2Model) {
+        return this.workflow2Model;
+      }
+      return config.workflow2Model || config.defaultModel || 'glm';
     }
     return config.defaultModel || 'glm';
+  }
+
+  getCurrentModel() {
+    return this.getModelForWorkflow(1);
   }
 }
 

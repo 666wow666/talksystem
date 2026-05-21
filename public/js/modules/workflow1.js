@@ -54,31 +54,34 @@
     }
 
     /**
-     * 构建包含基本信息的完整消息
-     * @param {string} text - 录音转写文本
-     * @param {boolean} includeBasicInfo - 是否包含基本信息
-     * @returns {string} - 整合后的完整消息
-     */
-    function buildMessageWithBasicInfo(text, includeBasicInfo) {
-        if (!includeBasicInfo) {
-            return text;
+         * 构建包含基本信息的完整消息
+         * @param {string} text - 录音转写文本
+         * @param {boolean} includeBasicInfo - 是否包含基本信息
+         * @returns {string} - 整合后的完整消息
+         */
+        function buildMessageWithBasicInfo(text, includeBasicInfo) {
+            if (!includeBasicInfo) {
+                return text;
+            }
+            var basicInfo = getBasicInfo();
+            if (!basicInfo) {
+                return text;
+            }
+            return '【基本信息】\n' +
+                '询问人：' + (basicInfo.inquirerName || '-') + '\n' +
+                '被询问人姓名：' + (basicInfo.respondentName || '-') + '\n' +
+                '身份证号：' + (basicInfo.idCard || '-') + '\n' +
+                '出生日期：' + (basicInfo.birthDate || '-') + '\n' +
+                '年龄：' + (basicInfo.age || '-') + '\n' +
+                '住址：' + (basicInfo.address || '-') + '\n' +
+                '户籍所在地：' + (basicInfo.registeredAddress || '-') + '\n' +
+                '联系方式：' + (basicInfo.phone || '-') + '\n' +
+                '职业：' + (basicInfo.occupation || '-') + '\n' +
+                '是否为人大代表：' + (basicInfo.isNPCDeputy || '-') + '\n' +
+                '与案件关系：' + (basicInfo.caseRelation || '-') + '\n' +
+                '警情：' + (basicInfo.caseInfo || '-') + '\n\n' +
+                '【录音内容】\n' + text;
         }
-        var basicInfo = getBasicInfo();
-        if (!basicInfo) {
-            return text;
-        }
-        return '【基本信息】\n' +
-            '询问人：' + (basicInfo.inquirerName || '-') + '\n' +
-            '被询问人姓名：' + (basicInfo.respondentName || '-') + '\n' +
-            '身份证号：' + (basicInfo.idCard || '-') + '\n' +
-            '住址：' + (basicInfo.address || '-') + '\n' +
-            '联系方式：' + (basicInfo.phone || '-') + '\n' +
-            '职业：' + (basicInfo.occupation || '-') + '\n' +
-            '政治面貌：' + (basicInfo.politicalStatus || '-') + '\n' +
-            '与案件关系：' + (basicInfo.caseRelation || '-') + '\n' +
-            '警情：' + (basicInfo.caseInfo || '-') + '\n\n' +
-            '【录音内容】\n' + text;
-    }
 
     /**
      * 发送文本到工作流1进行处理

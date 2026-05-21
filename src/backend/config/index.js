@@ -2,6 +2,10 @@ const config = {
   port: process.env.PORT || 5000,
   
   defaultModel: process.env.DEFAULT_MODEL || 'qianwen',
+  
+  // 工作流1和工作流2独立模型配置
+  workflow1Model: process.env.WORKFLOW1_MODEL || process.env.DEFAULT_MODEL || 'qianwen',
+  workflow2Model: process.env.WORKFLOW2_MODEL || process.env.DEFAULT_MODEL || 'qianwen',
 
   // 是否启用终端模型选择
   // true: 启动时在终端选择模型
@@ -11,44 +15,58 @@ const config = {
   glm: {
     apiKey: process.env.GLM_API_KEY,
     baseURL: process.env.GLM_BASE_URL || 'https://open.bigmodel.cn/api/paas/v4',
-    model: process.env.GLM_MODEL || 'glm-4-flash'
+    model: process.env.GLM_MODEL || 'glm-4-flash',
+    workflow1Model: process.env.GLM_WORKFLOW1_MODEL || process.env.GLM_MODEL || 'glm-4-flash',
+    workflow2Model: process.env.GLM_WORKFLOW2_MODEL || process.env.GLM_MODEL || 'glm-4-flash'
   },
 
   deepseek: {
     apiKey: process.env.DEEPSEEK_API_KEY,
     baseURL: process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com/v1',
-    model: process.env.DEEPSEEK_MODEL || 'deepseek-chat'
+    model: process.env.DEEPSEEK_MODEL || 'deepseek-chat',
+    workflow1Model: process.env.DEEPSEEK_WORKFLOW1_MODEL || process.env.DEEPSEEK_MODEL || 'deepseek-chat',
+    workflow2Model: process.env.DEEPSEEK_WORKFLOW2_MODEL || process.env.DEEPSEEK_MODEL || 'deepseek-chat'
   },
 
   doubao: {
     apiKey: process.env.DOUBAO_API_KEY,
     baseURL: process.env.DOUBAO_BASE_URL || 'https://ark.cn-beijing.volces.com/api/v3',
-    model: process.env.DOUBAO_MODEL || 'doubao-pro-32k'
+    model: process.env.DOUBAO_MODEL || 'doubao-pro-32k',
+    workflow1Model: process.env.DOUBAO_WORKFLOW1_MODEL || process.env.DOUBAO_MODEL || 'doubao-pro-32k',
+    workflow2Model: process.env.DOUBAO_WORKFLOW2_MODEL || process.env.DOUBAO_MODEL || 'doubao-pro-32k'
   },
 
   kimi: {
     apiKey: process.env.KIMI_API_KEY,
     baseURL: process.env.KIMI_BASE_URL || 'https://api.moonshot.cn/v1',
-    model: process.env.KIMI_MODEL || 'moonshot-v1-8k'
+    model: process.env.KIMI_MODEL || 'moonshot-v1-8k',
+    workflow1Model: process.env.KIMI_WORKFLOW1_MODEL || process.env.KIMI_MODEL || 'moonshot-v1-8k',
+    workflow2Model: process.env.KIMI_WORKFLOW2_MODEL || process.env.KIMI_MODEL || 'moonshot-v1-8k'
   },
 
   qianwen: {
     apiKey: process.env.QIANWEN_API_KEY,
     baseURL: process.env.QIANWEN_BASE_URL || 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-    model: process.env.QIANWEN_MODEL || 'qwen3.5-32b'
+    model: process.env.QIANWEN_MODEL || 'qwen3.5-32b',
+    workflow1Model: process.env.QIANWEN_WORKFLOW1_MODEL || process.env.QIANWEN_MODEL || 'qwen3.5-32b',
+    workflow2Model: process.env.QIANWEN_WORKFLOW2_MODEL || process.env.QIANWEN_MODEL || 'qwen3.5-32b'
   },
 
   ernie: {
     apiKey: process.env.ERNIE_API_KEY,
     secretKey: process.env.ERNIE_SECRET_KEY,
     baseURL: process.env.ERNIE_BASE_URL || 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat',
-    model: process.env.ERNIE_MODEL || 'ernie-4.0-turbo'
+    model: process.env.ERNIE_MODEL || 'ernie-4.0-turbo',
+    workflow1Model: process.env.ERNIE_WORKFLOW1_MODEL || process.env.ERNIE_MODEL || 'ernie-4.0-turbo',
+    workflow2Model: process.env.ERNIE_WORKFLOW2_MODEL || process.env.ERNIE_MODEL || 'ernie-4.0-turbo'
   },
 
   nvidia: {
     apiKey: process.env.NVIDIA_API_KEY,
     baseURL: process.env.NVIDIA_BASE_URL || 'https://integrate.api.nvidia.com/v1',
-    model: process.env.NVIDIA_MODEL || 'deepseek-ai/deepseek-v4-flash'
+    model: process.env.NVIDIA_MODEL || 'deepseek-ai/deepseek-v4-flash',
+    workflow1Model: process.env.NVIDIA_WORKFLOW1_MODEL || process.env.NVIDIA_MODEL || 'deepseek-ai/deepseek-v4-flash',
+    workflow2Model: process.env.NVIDIA_WORKFLOW2_MODEL || process.env.NVIDIA_MODEL || 'deepseek-ai/deepseek-v4-flash'
   },
 
   xfyun: {

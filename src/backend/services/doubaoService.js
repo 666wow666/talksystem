@@ -14,20 +14,22 @@ class DoubaoService extends BaseAIService {
     return this.apiKey;
   }
 
-  getModel() {
-    if (!this.model) {
-      this.model = config.doubao.model || 'doubao-pro-32k';
+  getModel(workflowNum = null) {
+    if (workflowNum === 1) {
+      return config.doubao.workflow1Model || config.doubao.model || 'doubao-pro-32k';
+    } else if (workflowNum === 2) {
+      return config.doubao.workflow2Model || config.doubao.model || 'doubao-pro-32k';
     }
-    return this.model;
+    return config.doubao.model || 'doubao-pro-32k';
   }
 
   getModelName() {
     return 'doubao';
   }
 
-  async executeRequest(messages, temperature) {
+  async executeRequest(messages, temperature, workflowNum = null) {
     const apiKey = this.getApiKey();
-    const model = this.getModel();
+    const model = this.getModel(workflowNum);
 
     if (!apiKey) {
       throw new Error('DOUBAO_API_KEY 未配置，请检查 .env 文件');

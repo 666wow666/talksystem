@@ -324,25 +324,39 @@
                         </div>
                         <div class="info-row">
                             <div class="info-item">
+                                <div class="info-label">出生日期</div>
+                                <div class="info-value" id="displayBirthDate">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">年龄</div>
+                                <div class="info-value" id="displayAge">-</div>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-item">
                                 <div class="info-label">住址</div>
                                 <div class="info-value" id="displayAddress">-</div>
                             </div>
                             <div class="info-item">
-                                <div class="info-label">联系电话</div>
-                                <div class="info-value" id="displayPhone">-</div>
+                                <div class="info-label">户籍所在地</div>
+                                <div class="info-value" id="displayRegisteredAddress">-</div>
                             </div>
                         </div>
                         <div class="info-row">
+                            <div class="info-item">
+                                <div class="info-label">联系电话</div>
+                                <div class="info-value" id="displayPhone">-</div>
+                            </div>
                             <div class="info-item">
                                 <div class="info-label">职业</div>
                                 <div class="info-value" id="displayOccupation">-</div>
                             </div>
-                            <div class="info-item">
-                                <div class="info-label">政治面貌</div>
-                                <div class="info-value" id="displayPoliticalStatus">-</div>
-                            </div>
                         </div>
                         <div class="info-row">
+                            <div class="info-item">
+                                <div class="info-label">是否为人大代表</div>
+                                <div class="info-value" id="displayIsNPCDeputy">-</div>
+                            </div>
                             <div class="info-item">
                                 <div class="info-label">与案件关系</div>
                                 <div class="info-value" id="displayCaseRelation">-</div>
@@ -369,7 +383,17 @@
                             </div>
                             <div class="info-item">
                                 <div class="info-label">身份证号</div>
-                                <input type="text" class="info-input" id="editIdCard" placeholder="请输入">
+                                <input type="text" class="info-input" id="editIdCard" placeholder="请输入" maxlength="18">
+                            </div>
+                        </div>
+                        <div class="info-row" id="editBirthAgeRow" style="display: none;">
+                            <div class="info-item">
+                                <div class="info-label">出生日期</div>
+                                <input type="text" class="info-input" id="editBirthDate" readonly placeholder="自动从身份证号推算">
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">年龄</div>
+                                <input type="text" class="info-input" id="editAge" readonly placeholder="自动从身份证号推算">
                             </div>
                         </div>
                         <div class="info-row">
@@ -378,31 +402,32 @@
                                 <input type="text" class="info-input" id="editAddress" placeholder="请输入">
                             </div>
                             <div class="info-item">
-                                <div class="info-label">联系电话</div>
-                                <input type="text" class="info-input" id="editPhone" placeholder="请输入">
+                                <div class="info-label">户籍所在地</div>
+                                <input type="text" class="info-input" id="editRegisteredAddress" placeholder="请输入">
                             </div>
                         </div>
                         <div class="info-row">
+                            <div class="info-item">
+                                <div class="info-label">联系电话</div>
+                                <input type="text" class="info-input" id="editPhone" placeholder="请输入">
+                            </div>
                             <div class="info-item">
                                 <div class="info-label">职业</div>
                                 <input type="text" class="info-input" id="editOccupation" placeholder="请输入">
                             </div>
+                        </div>
+                        <div class="info-row">
                             <div class="info-item">
-                                <div class="info-label">政治面貌</div>
+                                <div class="info-label">是否为人大代表</div>
                                 <div class="info-radio-group">
                                     <label class="info-radio-item">
-                                        <input type="radio" name="editPoliticalStatus" value="共产党员"> 共产党员
+                                        <input type="radio" name="editIsNPCDeputy" value="是"> 是
                                     </label>
                                     <label class="info-radio-item">
-                                        <input type="radio" name="editPoliticalStatus" value="政协委员"> 政协委员
-                                    </label>
-                                    <label class="info-radio-item">
-                                        <input type="radio" name="editPoliticalStatus" value="都不是" checked> 都不是
+                                        <input type="radio" name="editIsNPCDeputy" value="否" checked> 否
                                     </label>
                                 </div>
                             </div>
-                        </div>
-                        <div class="info-row">
                             <div class="info-item">
                                 <div class="info-label">与案件关系</div>
                                 <input type="text" class="info-input" id="editCaseRelation" placeholder="如：嫌疑人、证人、当事人等">
@@ -605,24 +630,57 @@ ${content}
 
         /**
          * 导出为纯文本格式（.txt）
-         * 提取文本内容，去除空行后导出
+         * 正确处理HTML元素的换行，保留段落结构
          * @param {HTMLElement} outputDiv - 笔录内容DOM元素
          * @param {string} dateStr - 文件名日期部分
          */
         function exportAsTxt(outputDiv, dateStr) {
-            var textContent = outputDiv.textContent.trim();
+            /**
+             * 递归遍历DOM元素，提取文本并处理换行
+             */
+            function extractText(node) {
+                var result = '';
+                
+                if (node.nodeType === Node.TEXT_NODE) {
+                    // 文本节点直接添加
+                    result = node.textContent;
+                } else if (node.nodeType === Node.ELEMENT_NODE) {
+                    var tagName = node.tagName.toLowerCase();
+                    
+                    // 块级元素在前后添加换行
+                    if (tagName === 'p' || tagName === 'div' || tagName === 'h1' || 
+                        tagName === 'h2' || tagName === 'h3' || tagName === 'li' || 
+                        tagName === 'br') {
+                        if (tagName === 'br') {
+                            result = '\n';
+                        } else {
+                            // 遍历子节点
+                            for (var i = 0; i < node.childNodes.length; i++) {
+                                result += extractText(node.childNodes[i]);
+                            }
+                            result += '\n';
+                        }
+                    } else {
+                        // 其他元素继续遍历子节点
+                        for (var j = 0; j < node.childNodes.length; j++) {
+                            result += extractText(node.childNodes[j]);
+                        }
+                    }
+                }
+                
+                return result;
+            }
             
-            // 按行分割，过滤空行
-            var lines = textContent.split('\n').filter(function(line) {
-                return line.trim();
-            });
+            // 提取文本
+            var rawText = extractText(outputDiv);
             
-            // 重新组合文本
-            var txtContent = '';
-            lines.forEach(function(line) {
-                txtContent += line.trim() + '\n';
-            });
-
+            // 处理文本，去除多余空格和换行
+            var txtContent = rawText
+                .replace(/[ \t]+\n/g, '\n')  // 行尾空格
+                .replace(/\n[ \t]+/g, '\n')  // 行首空格
+                .replace(/\n{3,}/g, '\n\n')  // 3个以上换行换成2个
+                .trim();
+            
             // 创建Blob对象并触发下载
             var blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
             var url = URL.createObjectURL(blob);
@@ -677,6 +735,57 @@ ${content}
             loadRecordContent();
         });
 
+        // ==================== 身份证号处理系统 ====================
+
+        /**
+         * 从身份证号提取出生日期和计算年龄
+         * @param {string} idCard - 18位身份证号
+         * @returns {Object} - 包含birthDate和age的对象
+         */
+        function parseIdCard(idCard) {
+            if (!idCard || idCard.length !== 18) {
+                return { birthDate: '', age: '' };
+            }
+            
+            // 提取出生日期（第7-14位）
+            const year = idCard.substring(6, 10);
+            const month = idCard.substring(10, 12);
+            const day = idCard.substring(12, 14);
+            const birthDateStr = year + '年' + month + '月' + day + '日';
+            
+            // 计算年龄
+            const birthDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            
+            return { birthDate: birthDateStr, age: age + '岁' };
+        }
+
+        /**
+         * 处理身份证号输入变化
+         */
+        function handleEditIdCardChange() {
+            const idCard = document.getElementById('editIdCard').value.trim();
+            const birthAgeRow = document.getElementById('editBirthAgeRow');
+            const birthDateInput = document.getElementById('editBirthDate');
+            const ageInput = document.getElementById('editAge');
+            
+            if (idCard.length === 18) {
+                const result = parseIdCard(idCard);
+                birthDateInput.value = result.birthDate;
+                ageInput.value = result.age;
+                birthAgeRow.style.display = 'flex';
+            } else {
+                birthDateInput.value = '';
+                ageInput.value = '';
+                birthAgeRow.style.display = 'none';
+            }
+        }
+
         // ==================== 基本信息管理系统 ====================
 
         /**
@@ -707,10 +816,13 @@ ${content}
             document.getElementById('displayInquirerName').textContent = info.inquirerName || '-';
             document.getElementById('displayRespondentName').textContent = info.respondentName || '-';
             document.getElementById('displayIdCard').textContent = info.idCard || '-';
+            document.getElementById('displayBirthDate').textContent = info.birthDate || '-';
+            document.getElementById('displayAge').textContent = info.age || '-';
             document.getElementById('displayAddress').textContent = info.address || '-';
+            document.getElementById('displayRegisteredAddress').textContent = info.registeredAddress || '-';
             document.getElementById('displayPhone').textContent = info.phone || '-';
             document.getElementById('displayOccupation').textContent = info.occupation || '-';
-            document.getElementById('displayPoliticalStatus').textContent = info.politicalStatus || '-';
+            document.getElementById('displayIsNPCDeputy').textContent = info.isNPCDeputy || '-';
             document.getElementById('displayCaseRelation').textContent = info.caseRelation || '-';
         }
 
@@ -726,16 +838,25 @@ ${content}
             document.getElementById('editInquirerName').value = info.inquirerName || '';
             document.getElementById('editRespondentName').value = info.respondentName || '';
             document.getElementById('editIdCard').value = info.idCard || '';
+            document.getElementById('editBirthDate').value = info.birthDate || '';
+            document.getElementById('editAge').value = info.age || '';
             document.getElementById('editAddress').value = info.address || '';
+            document.getElementById('editRegisteredAddress').value = info.registeredAddress || '';
             document.getElementById('editPhone').value = info.phone || '';
             document.getElementById('editOccupation').value = info.occupation || '';
             document.getElementById('editCaseRelation').value = info.caseRelation || '';
             
             // 设置单选按钮状态
-            var radios = document.getElementsByName('editPoliticalStatus');
+            var radios = document.getElementsByName('editIsNPCDeputy');
             for (var i = 0; i < radios.length; i++) {
-                radios[i].checked = radios[i].value === (info.politicalStatus || '都不是');
+                radios[i].checked = radios[i].value === (info.isNPCDeputy || '否');
             }
+            
+            // 处理身份证号，显示/隐藏出生日期和年龄
+            handleEditIdCardChange();
+            
+            // 绑定身份证号输入事件
+            document.getElementById('editIdCard').addEventListener('input', handleEditIdCardChange);
             
             // 切换界面显示
             document.getElementById('infoDisplayArea').classList.add('hidden');
@@ -777,10 +898,13 @@ ${content}
                 inquirerName: document.getElementById('editInquirerName').value.trim(),
                 respondentName: document.getElementById('editRespondentName').value.trim(),
                 idCard: document.getElementById('editIdCard').value.trim(),
+                birthDate: document.getElementById('editBirthDate').value.trim(),
+                age: document.getElementById('editAge').value.trim(),
                 address: document.getElementById('editAddress').value.trim(),
+                registeredAddress: document.getElementById('editRegisteredAddress').value.trim(),
                 phone: document.getElementById('editPhone').value.trim(),
                 occupation: document.getElementById('editOccupation').value.trim(),
-                politicalStatus: document.querySelector('input[name="editPoliticalStatus"]:checked').value,
+                isNPCDeputy: document.querySelector('input[name="editIsNPCDeputy"]:checked').value,
                 caseRelation: document.getElementById('editCaseRelation').value.trim()
             };
             
