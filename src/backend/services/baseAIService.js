@@ -1,129 +1,294 @@
+/**
+ * 谈心谈话 AI 服务基类
+ *
+ * 工作流设计：
+ *   - workflow1：实时访谈引导智能体
+ *     根据实时语音转写文本，判断谈话方向，输出老师下一句应该问的开放式问题
+ *     返回：{ content: string, tag: '学业情况' | '人际关系' | '心理状态' | '生活状况' | '个人规划' }
+ *
+ *   - workflow2：角色分离智能体
+ *     根据完整谈话内容，为每一段发言标注身份（老师/学生），
+ *     在每条发言前添加 "老师：" 或 "学生：" 前缀
+ *     返回：string（已添加身份标注的完整文本）
+ *
+ * 具体模型（GLM/DeepSeek/豆包 等）继承本类，
+ * 实现 executeRequest() 调用对应平台的大模型 API。
+ */
+
 class BaseAIService {
-  constructor() {
-    this.workflow1Buffer = '';
-    this.workflow1Resolvers = [];
-    this.isProcessingWorkflow1 = false;
-  }
-
-  async workflow1(message) {
-    this.workflow1Buffer = (this.workflow1Buffer ? this.workflow1Buffer + '\n' : '') + message;
-
-    if (this.isProcessingWorkflow1) {
-      return new Promise((resolve, reject) => {
-        this.workflow1Resolvers.push({ resolve, reject });
-      });
+    constructor() {
+        // workflow1 请求合并：将短时间内的多条转写合并为一次 AI 调用
+        this.workflow1Buffer = '';
+        this.workflow1Resolvers = [];
+        this.isProcessingWorkflow1 = false;
     }
 
-    return new Promise((resolve, reject) => {
-      this.workflow1Resolvers.push({ resolve, reject });
-      this.processWorkflow1Buffer();
-    });
-  }
+    // ========== workflow1：实时访谈引导智能体 ==========
 
-  async processWorkflow1Buffer() {
-    if (this.isProcessingWorkflow1 || this.workflow1Buffer.trim() === '') {
-      return;
+    /**
+     * 入口方法：外部传入一段文本，返回 { content, tag }
+     * 内部做请求合并，避免高频调用导致 AI 服务压力。
+     */
+    async workflow1(message) {
+        this.workflow1Buffer = (this.workflow1Buffer ? this.workflow1Buffer + '\n' : '') + message;
+
+        if (this.isProcessingWorkflow1) {
+            return new Promise((resolve, reject) => {
+                this.workflow1Resolvers.push({ resolve, reject });
+            });
+        }
+
+        return new Promise((resolve, reject) => {
+            this.workflow1Resolvers.push({ resolve, reject });
+            this.processWorkflow1Buffer();
+        });
     }
 
-    this.isProcessingWorkflow1 = true;
-    const bufferedContent = this.workflow1Buffer;
-    this.workflow1Buffer = '';
+    async processWorkflow1Buffer() {
+        if (this.isProcessingWorkflow1 || this.workflow1Buffer.trim() === '') {
+            return;
+        }
 
-    try {
-      const result = await this.executeRequest([
-        { role: 'system', content: this.getWorkflow1Prompt() },
-        { role: 'user', content: bufferedContent }
-      ], 0.7, 1);
+        this.isProcessingWorkflow1 = true;
+        const bufferedContent = this.workflow1Buffer;
+        this.workflow1Buffer = '';
 
-      this.workflow1Resolvers.forEach(item => item.resolve(result));
-    } catch (error) {
-      this.workflow1Resolvers.forEach(item => item.reject(error));
-    } finally {
-      this.workflow1Resolvers = [];
-      this.isProcessingWorkflow1 = false;
+        try {
+            const rawResult = await this.executeRequest([
+                { role: 'system', content: this.getWorkflow1Prompt() },
+                {
+                    role: 'user',
+                    content: '以下是实时语音转写文本，请给出老师下一句提问：\n\n' + bufferedContent
+                }
+            ], 0.3, 1);
 
-      if (this.workflow1Buffer.trim() !== '') {
-        this.processWorkflow1Buffer();
-      }
+            const parsed = this.extractJsonFromResult(rawResult);
+            const normalized = this.normalizeWorkflow1Result(parsed);
+
+            this.workflow1Resolvers.forEach(item => item.resolve(normalized));
+        } catch (error) {
+            this.workflow1Resolvers.forEach(item => item.reject(error));
+        } finally {
+            this.workflow1Resolvers = [];
+            this.isProcessingWorkflow1 = false;
+
+            if (this.workflow1Buffer.trim() !== '') {
+                this.processWorkflow1Buffer();
+            }
+        }
     }
-  }
 
-  async workflow2(text, basicInfo) {
-    const prompt = this.buildWorkflow2Prompt(text, basicInfo);
+    /**
+     * workflow1 的 System Prompt
+     * 学校谈心谈话实时引导智能体
+     */
+    getWorkflow1Prompt() {
+        return `你是"学校谈心谈话实时引导智能体"。
 
-    const result = await this.executeRequest([
-      { role: 'system', content: this.getWorkflow2Prompt() },
-      { role: 'user', content: prompt }
-    ], 0.5, 2);
+你的任务是：
+根据未分角色、未断句的实时语音转写文本，帮助老师判断下一步应该问什么问题，并确定谈话方向。
 
-    return result;
-  }
+【输入】
+实时ASR文本流（可能不完整）
 
-  getCurrentTime() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hour = String(now.getHours()).padStart(2, '0');
-    return `${year}年${month}月${day}日${hour}时`;
-  }
+【输出 JSON（必须严格）】
 
-  getWorkflow1Prompt() {
-    return `你是一名专业的审讯员。请根据输入的对话片段，并联系之前的对话片段，站在询问人员的角度，生成推荐追问问题。
-    你获得的信息将是分散的，请你充分结合之前用户发送的信息来判断。
-    区分面对的对象是证人还是嫌疑人，该信息在用户发送的"基本信息"下的与案件关系部分，针对不同的对象采取相对应的询问方法。
-
-【输出格式】
-严格按以下JSON格式输出，不要输出任何其他内容：
-{"q1":"问题1内容","s1":分数1,"q2":"问题2内容","s2":分数2,"q3":"问题3内容","s3":分数3,"q4":"问题4内容","s4":分数4,"q5":"问题5内容","s5":分数5}
+{
+  "content": "一句老师可以直接说的追问",
+  "tag": "学业情况 | 人际关系 | 心理状态 | 生活状况 | 个人规划",
+  "reason": "提出这个问题的原因，说明为什么要问这个问题"
+}
 
 【规则】
-1. 问题要具体、尖锐、简洁、可直接使用
-2. 围绕模糊、矛盾、回避、信息缺失等地方提问
-3. 每个问题必须对应一个分数（0-100的整数），该分数由分析案件经过后得出，分数越高表示越重要
-4. 每次提出五个问题，信息过少可要求被询问人讲述事件经过等
-5.不得随意捏造事实，以及随意想象案情`;
-  }
 
-  getWorkflow2Prompt() {
-    return `你是一名专业的公安笔录记录员。请根据提供的基本信息和录音内容，生成规范的讯问笔录。基本信息作为分析对话的参考不需要都填入笔录中。
-    【规则】
-    1.不得扭曲、篡改、编造内容，若有无法理解的部分以【】标注该部分的头尾
-    2.输出格式严格按照以下要求
-    3."_"和"□"部分和它对应的信息不填写。
-    【输出格式要求】
-严格按照以下格式输出，不要添加任何额外内容:
-时间:____年___月___日___时___分至____年___月___日___时___分
-询问/讯问人_______________   被询问/讯问人____________  性别        年龄        出生日期
-身份证件种类及号码                             □是□否人大代表
-现住址                                    联系方式
-户籍所在地
-（口头传唤∕被扭送∕自动投案的被询问/讯问人____月___日___时__分到达，____月___日___时___分离开，本人签名___________）。
-问：
-答：`;
-  }
+1. 只输出一个问题
+2. 不做心理诊断
+3. reason 要简洁说明提问原因，帮助老师理解为什么问这个问题
+4. 必须自然像老师说话
+5. 必须是开放式问题
+6. 输入可能不完整，要自行理解语义
+7. tag必须严格五选一
+8. 如果不确定 → 选"心理状态"
 
-  buildWorkflow2Prompt(text, basicInfo) {
-    let prompt = '【基本信息】\n';
-    prompt += '询问人：' + (basicInfo?.inquirerName || '-') + '\n';
-    prompt += '被询问人姓名：' + (basicInfo?.respondentName || '-') + '\n';
-    prompt += '身份证号：' + (basicInfo?.idCard || '-') + '\n';
-    prompt += '住址：' + (basicInfo?.address || '-') + '\n';
-    prompt += '联系方式：' + (basicInfo?.phone || '-') + '\n';
-    prompt += '职业：' + (basicInfo?.occupation || '-') + '\n';
-    prompt += '政治面貌：' + (basicInfo?.politicalStatus || '-') + '\n';
-    prompt += '与案件关系：' + (basicInfo?.caseRelation || '-') + '\n\n';
-    prompt += '【录音内容】\n' + text;
-    return prompt;
-  }
+【标签定义】
 
-  async executeRequest(messages, temperature) {
-    throw new Error('executeRequest 方法必须在子类中实现');
-  }
+学业情况：学习、考试、成绩、升学
+人际关系：同学、朋友、冲突
+心理状态：情绪、压力、焦虑
+生活状况：家庭、作息、健康
+个人规划：未来目标、发展方向`;
+    }
 
-  getModelName() {
-    throw new Error('getModelName 方法必须在子类中实现');
-  }
+    /**
+     * 从 AI 返回的原始文本中提取 JSON 对象
+     * 兼容：代码块、带额外说明、嵌套引号等情况
+     */
+    extractJsonFromResult(rawText) {
+        if (!rawText || typeof rawText !== 'string') {
+            return null;
+        }
+
+        const text = rawText.trim();
+
+        // 1. 尝试 ```json ... ``` 代码块
+        const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
+        if (codeBlockMatch) {
+            try { return JSON.parse(codeBlockMatch[1].trim()); } catch (e) {}
+        }
+
+        // 2. 尝试全文直接 JSON
+        try { return JSON.parse(text); } catch (e) {}
+
+        // 3. 寻找第一个 { 到最后一个 } 之间的内容
+        const firstBrace = text.indexOf('{');
+        const lastBrace = text.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+            const jsonStr = text.substring(firstBrace, lastBrace + 1);
+            try { return JSON.parse(jsonStr); } catch (e) {}
+        }
+
+        // 4. 寻找 "content": "..." 等关键字段
+        const contentMatch = text.match(/"content"\s*:\s*"([^"]*)"/);
+        const tagMatch = text.match(/"tag"\s*:\s*"([^"]*)"/);
+        const reasonMatch = text.match(/"reason"\s*:\s*"([^"]*)"/);
+        if (contentMatch && tagMatch) {
+            return {
+                content: contentMatch[1],
+                tag: tagMatch[1],
+                reason: reasonMatch ? reasonMatch[1] : ''
+            };
+        }
+
+        return null;
+    }
+
+    /**
+     * 规范化 workflow1 返回结果
+     * 确保 content、tag 和 reason 合法，有兜底策略
+     */
+    normalizeWorkflow1Result(obj) {
+        const VALID_TAGS = ['学业情况', '人际关系', '心理状态', '生活状况', '个人规划'];
+        const FALLBACK_QUESTION = '最近有没有什么事情让你感觉压力比较大？';
+        const DEFAULT_TAG = '心理状态';
+        const FALLBACK_REASON = '根据谈话内容，进一步了解学生情况';
+
+        if (!obj || typeof obj !== 'object') {
+            return { content: FALLBACK_QUESTION, tag: DEFAULT_TAG, reason: FALLBACK_REASON };
+        }
+
+        let content = obj.content;
+        let tag = obj.tag;
+        let reason = obj.reason;
+
+        if (!content || typeof content !== 'string' || !content.trim()) {
+            content = FALLBACK_QUESTION;
+        } else {
+            content = content.trim();
+        }
+
+        if (!tag || typeof tag !== 'string' || VALID_TAGS.indexOf(tag.trim()) === -1) {
+            tag = DEFAULT_TAG;
+        } else {
+            tag = tag.trim();
+        }
+
+        if (!reason || typeof reason !== 'string' || !reason.trim()) {
+            reason = FALLBACK_REASON;
+        } else {
+            reason = reason.trim();
+        }
+
+        return { content: content, tag: tag, reason: reason };
+    }
+
+    // ========== workflow2：角色分离智能体 ==========
+
+    async workflow2(text, basicInfo) {
+        console.log('[BaseAIService] workflow2 调用开始');
+        console.log('[BaseAIService] 输入文本长度:', text ? text.length : 0);
+        console.log('[BaseAIService] basicInfo:', JSON.stringify(basicInfo));
+        
+        const prompt = this.buildWorkflow2Prompt(text, basicInfo);
+        console.log('[BaseAIService] 构建的prompt长度:', prompt.length);
+        console.log('[BaseAIService] prompt预览:', prompt.substring(0, 200) + '...');
+
+        const systemPrompt = this.getWorkflow2Prompt();
+        console.log('[BaseAIService] SystemPrompt长度:', systemPrompt.length);
+
+        console.log('[BaseAIService] 开始调用executeRequest...');
+        const startTime = Date.now();
+        
+        const result = await this.executeRequest([
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: prompt }
+        ], 0.5, 2);
+
+        const duration = Date.now() - startTime;
+        console.log('[BaseAIService] executeRequest完成，耗时:', duration + 'ms');
+        console.log('[BaseAIService] 返回结果长度:', result ? result.length : 0);
+
+        return result;
+    }
+
+    /**
+     * workflow2 的 System Prompt
+     * 教育场景对话分析助手（无警情、无刑侦术语）
+     */
+    getWorkflow2Prompt() {
+        return `你是教育场景对话分析助手，请对下方师生谈话内容进行发言身份识别与拆分。
+
+识别规则
+
+    老师特征：主导对话、发起询问状况类提问、给出指导 / 评价 / 建议、引导表达、使用教育类话术。
+    学生特征：回答问题、讲述个人情况、表达想法 / 感受、配合引导发言、发起征求建议类提问。
+    严格依据上下文语义、对话逻辑、问答关系推断身份，原文无标注需自主判断。
+    硬性要求：完整保留原文文字、不增删、不修改语义、不调整发言顺序、只做文字的梳理和添加发言人前缀。
+    无法判定发言身份时，统一标记为【身份待确认】。
+
+输出格式
+老师：
+学生：`;
+    }
+
+    /**
+     * 构造 workflow2 的 user prompt
+     * 注意：这里不再包含 "警情" 等刑侦术语，改为教育场景字段。
+     */
+    buildWorkflow2Prompt(text, basicInfo) {
+        let prompt = '【基本信息】\n';
+        const info = basicInfo || {};
+        prompt += '谈话人：' + (info.interviewer || (info.inquirerName ? info.inquirerName : '-')) + '\n';
+        prompt += '学生姓名：' + (info.studentName || (info.respondentName ? info.respondentName : '-')) + '\n';
+        if (info.studentId) prompt += '学号：' + info.studentId + '\n';
+        if (info.studentInfo) {
+            const si = info.studentInfo;
+            if (si.class) prompt += '班级：' + si.class + '\n';
+            if (si.college) prompt += '学院：' + si.college + '\n';
+            if (si.grade) prompt += '年级：' + si.grade + '\n';
+        }
+        if (info.conversationTypeLabel) {
+            prompt += '谈话类型：' + info.conversationTypeLabel + '\n';
+        }
+        prompt += '\n【录音内容】\n' + (text || '');
+        return prompt;
+    }
+
+    // ========== 需子类实现的方法 ==========
+
+    /**
+     * 调用具体平台的 AI API
+     * messages: [{ role: 'system'|'user', content: string }, ...]
+     * temperature: 0~1
+     * workflowNum: 1 或 2（用于选择不同模型配置）
+     * 返回：string（AI 返回的原始文本）
+     */
+    async executeRequest(messages, temperature, workflowNum) {
+        throw new Error('executeRequest 方法必须在子类中实现');
+    }
+
+    getModelName() {
+        throw new Error('getModelName 方法必须在子类中实现');
+    }
 }
 
 module.exports = { BaseAIService };

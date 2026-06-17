@@ -1,0 +1,47 @@
+{
+  "name": "@psychology/question-timeline",
+  "version": "1.0.0",
+  "description": "推荐问题时间轴管理模块 - 支持 Vanilla、React + Zustand",
+  "main": "index.ts",
+  "types": "index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./types": "./types.ts",
+    "./questionStore": "./questionStore.ts",
+    "./questionStoreVanilla": "./questionStoreVanilla.ts",
+    "./questionWebSocket": "./questionWebSocket.ts",
+    "./examples": "./examples.ts"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "zustand": ">=4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "zustand": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "vitest": ">=1.0.0"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "demo": "npx tsx examples.ts"
+  },
+  "keywords": [
+    "question-timeline",
+    "interrogation",
+    "counseling",
+    "conversation",
+    "zustand",
+    "react",
+    "typescript"
+  ],
+  "files": [
+    "*.ts"
+  ]
+}

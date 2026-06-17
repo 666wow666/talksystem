@@ -1,0 +1,495 @@
+/**
+ * 学生档案页面样式
+ */
+
+/* ============ 学生档案页面容器 ============ */
+.view-case {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    padding: 24px 32px;
+    overflow: hidden;
+}
+
+.view-case.active {
+    display: flex;
+}
+
+/* ============ 档案容器 ============ */
+.student-archive-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* ============ 档案头部 ============ */
+.student-archive-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+}
+
+.student-archive-header h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.student-archive-header h1 i {
+    color: #3b82f6;
+    font-size: 24px;
+}
+
+/* ============ 新增按钮 ============ */
+.student-add-btn {
+    padding: 8px 16px;
+    background: #3b82f6;
+    color: #ffffff;
+    border: 1px solid #3b82f6;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.student-add-btn:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+    transform: translateY(-1px);
+}
+
+/* ============ 档案网格 ============ */
+.student-grid {
+    flex: 1;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 16px;
+    padding: 4px;
+    align-content: start;
+}
+
+/* ============ 学生卡片 ============ */
+.student-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 12px 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.student-card:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.15);
+    transform: translateY(-2px);
+}
+
+/* 学生照片 */
+.student-photo {
+    width: 70px;
+    height: 85px;
+    background: linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%);
+    border: 2px solid #bfdbfe;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    overflow: hidden;
+}
+
+.student-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.student-photo i {
+    font-size: 36px;
+    color: #60a5fa;
+}
+
+/* 学生信息 */
+.student-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+
+.student-class {
+    font-size: 11.5px;
+    color: #6b7280;
+}
+
+/* 空状态 */
+.student-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 16px;
+    color: #9ca3af;
+    grid-column: 1 / -1;
+}
+
+.student-empty i {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.student-empty p {
+    margin: 4px 0;
+    font-size: 13px;
+}
+
+/* 加载状态 */
+.student-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    color: #9ca3af;
+    gap: 6px;
+    flex: 1;
+}
+
+.student-loading i {
+    font-size: 14px;
+}
+
+/* ============ 学生信息采集弹窗 ============ */
+.student-form-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.student-form-modal.active {
+    display: flex;
+}
+
+.student-form-box {
+    background: #ffffff;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.student-form-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid #e5e7eb;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+}
+
+.student-form-header h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e40af;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.student-form-close {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #6b7280;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.student-form-close:hover {
+    background: rgba(239, 68, 68, 0.08);
+    color: #ef4444;
+    border-color: #fecaca;
+}
+
+.student-form-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px 20px;
+}
+
+/* 照片区域 */
+.student-form-photo-row {
+    margin-bottom: 18px;
+}
+
+.student-form-photo-area {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px dashed #cbd5e1;
+}
+
+.student-form-photo-preview {
+    width: 90px;
+    height: 110px;
+    background: linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid #bfdbfe;
+}
+
+.student-form-photo-preview i {
+    font-size: 40px;
+    color: #60a5fa;
+}
+
+.student-form-photo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.student-form-photo-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.student-form-photo-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: #3b82f6;
+    color: #ffffff;
+    border: 1px solid #3b82f6;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.student-form-photo-btn:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+.student-form-photo-btn input[type="file"] {
+    display: none;
+}
+
+.student-form-photo-hint {
+    font-size: 11px;
+    color: #94a3b8;
+    line-height: 1.5;
+}
+
+/* 表单行 */
+.student-form-row {
+    margin-bottom: 12px;
+}
+
+.student-form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.student-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.student-form-label {
+    font-size: 11.5px;
+    color: #64748b;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.student-form-label .required {
+    color: #ef4444;
+}
+
+.student-form-input {
+    width: 100%;
+    padding: 8px 11px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 12.5px;
+    color: #1f2937;
+    background: #ffffff;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    box-sizing: border-box;
+}
+
+.student-form-input:hover {
+    border-color: #93c5fd;
+}
+
+.student-form-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.student-form-input[type="date"] {
+    color: #1f2937;
+}
+
+/* 性别选项 */
+.student-form-gender {
+    display: flex;
+    gap: 8px;
+    padding: 2px 0;
+}
+
+.student-form-gender-option {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 12px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #374151;
+    transition: all 0.15s;
+    flex: 1;
+    justify-content: center;
+}
+
+.student-form-gender-option:hover {
+    background: #eff6ff;
+    border-color: #93c5fd;
+}
+
+.student-form-gender-option input[type="radio"] {
+    margin: 0;
+    cursor: pointer;
+}
+
+.student-form-gender-option input[type="radio"]:checked + span {
+    color: #2563eb;
+    font-weight: 600;
+}
+
+/* 底部按钮 */
+.student-form-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 12px 18px;
+    border-top: 1px solid #e5e7eb;
+    background: #ffffff;
+}
+
+.student-form-btn {
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.student-form-btn-secondary {
+    background: #ffffff;
+    color: #4b5563;
+    border: 1px solid #d1d5db;
+}
+
+.student-form-btn-secondary:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+    color: #1f2937;
+}
+
+.student-form-btn-primary {
+    background: #3b82f6;
+    color: #ffffff;
+    border: 1px solid #3b82f6;
+}
+
+.student-form-btn-primary:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+.student-form-btn-primary:disabled {
+    background: #93c5fd;
+    border-color: #93c5fd;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+/* ============ 响应式 ============ */
+@media (max-width: 768px) {
+    .student-form-row-2 {
+        grid-template-columns: 1fr;
+    }
+    .student-form-photo-area {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .student-form-modal {
+        padding: 10px;
+    }
+    .student-form-box {
+        max-height: 92vh;
+    }
+}

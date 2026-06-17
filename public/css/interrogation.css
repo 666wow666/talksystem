@@ -1,0 +1,1363 @@
+/**
+ * 谈话记录页面样式 — CSS Grid 布局
+ * 两个问题推荐卡片：保留明显边框
+ * 其他卡片（转写、学生信息、对话要点）：渐变隐去效果，减少分隔感
+ */
+
+/* ============ 容器基础 ============ */
+.view-interrogation {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #f4f8ff 0%, #eef3fb 100%);
+    flex-direction: row;
+    overflow: hidden;
+}
+
+.view-interrogation.active {
+    display: flex;
+}
+
+/* ============ 空状态 ============ */
+.interrogation-empty {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: #9ca3af;
+}
+
+.interrogation-empty i {
+    font-size: 64px;
+    margin-bottom: 16px;
+    color: #d1d5db;
+}
+
+.interrogation-empty p {
+    font-size: 16px;
+    margin: 0;
+}
+
+.interrogation-empty.show {
+    display: flex;
+}
+
+/* ============ Grid 布局主容器 ============ */
+.interrogation-grid {
+    width: 100%;
+    height: 100%;
+    padding: 10px 24px 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    grid-template-areas:
+        "guide     guide     transcript"
+        "info      summary   transcript";
+    gap: 18px;
+}
+
+/* ============ 实时引导卡片（grid 横向两分区）============ */
+.interrogation-guide-card {
+    grid-area: guide;
+    background: #ffffff;
+    border-radius: 22px;
+    padding: 20px 24px;
+    box-shadow:
+        0 4px 14px rgba(0, 0, 0, 0.03),
+        0 18px 40px -20px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 24px;
+    transition: box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+    position: relative;
+}
+
+.interrogation-guide-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40%;
+    height: 3px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(59, 130, 246, 0.2) 20%,
+        rgba(59, 130, 246, 0.45) 50%,
+        rgba(59, 130, 246, 0.2) 80%,
+        transparent 100%);
+    border-radius: 0 0 3px 3px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.interrogation-guide-card:hover {
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.06),
+        0 32px 64px -32px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+    border-color: rgba(59, 130, 246, 0.15);
+}
+
+.interrogation-guide-card:hover::before {
+    opacity: 1;
+}
+
+/* 左侧：标签 + 问题 */
+.guide-left {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 16px;
+}
+
+/* 左上标签 */
+.guide-tag {
+    display: none;
+    align-items: center;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.12);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+    align-self: start;
+    justify-self: start;
+}
+
+/* 标签有内容时显示 */
+.guide-tag.visible {
+    display: inline-flex;
+}
+
+/* 五类标签颜色 */
+.guide-tag[data-tag="学业情况"] {
+    color: #2563eb;
+    background: rgba(37, 99, 235, 0.12);
+    border-color: rgba(37, 99, 235, 0.25);
+}
+
+.guide-tag[data-tag="人际关系"] {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.25);
+}
+
+.guide-tag[data-tag="心理状态"] {
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.12);
+    border-color: rgba(59, 130, 246, 0.25);
+}
+
+.guide-tag[data-tag="生活状况"] {
+    color: #f97316;
+    background: rgba(249, 115, 22, 0.12);
+    border-color: rgba(249, 115, 22, 0.25);
+}
+
+.guide-tag[data-tag="个人规划"] {
+    color: #7c3aed;
+    background: rgba(124, 58, 237, 0.12);
+    border-color: rgba(124, 58, 237, 0.25);
+}
+
+/* 推荐问题 */
+.guide-question {
+    font-size: 17px;
+    line-height: 1.7;
+    color: #1e3a5f;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.guide-question-placeholder {
+    color: #cbd5e1;
+    font-size: 20px;
+    font-weight: 400;
+}
+
+/* 右侧：原因 */
+.guide-reason {
+    background: linear-gradient(180deg, rgba(219, 234, 254, 0.15) 0%, rgba(248, 250, 252, 0.5) 100%);
+    border-left: 2px solid rgba(59, 130, 246, 0.15);
+    border-radius: 0 14px 14px 0;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 100%;
+}
+
+.guide-reason-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.guide-reason-text {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #475569;
+    font-weight: 500;
+}
+
+.guide-reason-placeholder {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* ============ 软卡片基础样式（渐变隐去效果） ============ */
+/* 核心思路：使用非常浅的半透明白色 + 轻微嵌入感阴影（inset）+ 大圆角 */
+/* 让卡片看起来像是从背景"挖出来"的，而不是放在上面 */
+.interrogation-card-soft {
+    position: relative;
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.75) 0%,
+        rgba(245, 248, 255, 0.45) 50%,
+        rgba(235, 242, 255, 0.25) 100%);
+    border-radius: 24px;
+    padding: 14px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    /* 关键：使用内嵌阴影 + 极轻边缘半透明高光，营造渐隐感 */
+    box-shadow:
+        /* 外边缘高光（四角更亮，营造玻璃凸起感） */
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        inset 0 -1px 0 rgba(59, 130, 246, 0.04),
+        /* 四角非常柔的高光 */
+        0 0 0 1px rgba(255, 255, 255, 0.3),
+        /* 轻微上浮阴影 */
+        0 2px 8px rgba(59, 130, 246, 0.04);
+    overflow: hidden;
+}
+
+/* 顶部+左侧细微高光，底部+右侧极轻阴影 —— 实现边缘渐隐 */
+.interrogation-card-soft::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    pointer-events: none;
+    background:
+        /* 左上角高光 */
+        radial-gradient(ellipse 200px 140px at 0% 0%,
+            rgba(255, 255, 255, 0.85) 0%,
+            rgba(255, 255, 255, 0) 70%),
+        /* 右下角非常轻的阴影感 */
+        radial-gradient(ellipse 200px 140px at 100% 100%,
+            rgba(59, 130, 246, 0.06) 0%,
+            rgba(59, 130, 246, 0) 70%);
+    z-index: 0;
+}
+
+/* 让卡片内容位于渐隐效果之上 */
+.interrogation-card-soft > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* ============ 对话转写卡片（右侧纵向，跨两行） ============ */
+.interrogation-card-transcript {
+    grid-area: transcript;
+    padding-top: 20px;
+}
+
+.interrogation-transcript-header-soft {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #3b82f6;
+    flex-shrink: 0;
+}
+
+.interrogation-soft-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #3b82f6;
+    opacity: 0.8;
+    flex-shrink: 0;
+}
+
+.interrogation-transcript-content {
+    flex: 1;
+    overflow-y: auto;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #475569;
+    min-height: 0;
+}
+
+.interrogation-transcript-content:empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.interrogation-transcript-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #94a3b8;
+    text-align: center;
+    padding: 20px;
+    opacity: 0.7;
+}
+
+.interrogation-transcript-placeholder i {
+    font-size: 26px;
+    opacity: 0.4;
+}
+
+.interrogation-transcript-placeholder p {
+    margin: 0;
+    font-size: 12px;
+}
+
+.interrogation-transcript-text {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* ============ 学生信息卡片（左下） ============ */
+.interrogation-card-student {
+    grid-area: info;
+    align-content: flex-start;
+}
+
+.interrogation-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.interrogation-student-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+.interrogation-student-row i {
+    color: #3b82f6;
+    font-size: 11px;
+    opacity: 0.65;
+    flex-shrink: 0;
+}
+
+.interrogation-student-block {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding-top: 4px;
+}
+
+.interrogation-student-block i {
+    color: #3b82f6;
+    font-size: 11px;
+    opacity: 0.65;
+    margin-top: 3px;
+    flex-shrink: 0;
+}
+
+.interrogation-student-block p {
+    margin: 0;
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.7;
+}
+
+/* ============ 对话要点 + 录音控制卡片（中下） ============ */
+.interrogation-card-summary {
+    grid-area: summary;
+    align-items: center;
+    justify-content: flex-start;
+    /* 无边框，上部浅蓝色渐变 */
+    background: linear-gradient(180deg, rgba(219, 234, 254, 0.35) 0%, rgba(255, 255, 255, 0) 40%);
+    border: none;
+    box-shadow: none;
+}
+
+.interrogation-card-summary::before {
+    display: none;
+}
+
+/* 对话要点标题 */
+.interrogation-summary-title {
+    margin: 0;
+    padding-top: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e3a5f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: 0.5px;
+}
+
+.interrogation-summary-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #3b82f6;
+    opacity: 0.7;
+}
+
+/* 对话要点列表（无背景无边框） */
+.interrogation-summary-list {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+}
+
+.interrogation-summary-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #475569;
+    background: transparent;
+    border: none;
+}
+
+.interrogation-summary-item-dot {
+    width: 8px;
+    height: 8px;
+    min-width: 8px;
+    min-height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    flex-grow: 0;
+    margin-top: 4px;
+}
+
+.interrogation-summary-item span:last-child {
+    flex: 1;
+}
+
+.interrogation-summary-item-blue .interrogation-summary-item-dot {
+    background: #3b82f6;
+}
+
+.interrogation-summary-item-green .interrogation-summary-item-dot {
+    background: #10b981;
+}
+
+.interrogation-summary-item-orange .interrogation-summary-item-dot {
+    background: #f97316;
+}
+
+/* ============ 实时引导卡片样式 ============ */
+
+/* 标签所在行（左上角） */
+.talk-guide-tag-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+    min-height: 22px;
+}
+
+/* 标签样式 */
+.talk-guide-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.12);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+    line-height: 1.4;
+}
+
+/* 五种标签的不同颜色 */
+.talk-guide-tag[data-tag="学业情况"] {
+    color: #2563eb;
+    background: rgba(37, 99, 235, 0.12);
+    border-color: rgba(37, 99, 235, 0.25);
+}
+
+.talk-guide-tag[data-tag="人际关系"] {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.25);
+}
+
+.talk-guide-tag[data-tag="心理状态"] {
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.12);
+    border-color: rgba(59, 130, 246, 0.25);
+}
+
+.talk-guide-tag[data-tag="生活状况"] {
+    color: #f97316;
+    background: rgba(249, 115, 22, 0.12);
+    border-color: rgba(249, 115, 22, 0.25);
+}
+
+.talk-guide-tag[data-tag="个人规划"] {
+    color: #7c3aed;
+    background: rgba(124, 58, 237, 0.12);
+    border-color: rgba(124, 58, 237, 0.25);
+}
+
+/* 加载指示（小旋转图标） */
+.talk-guide-loading {
+    display: none;
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+/* 推荐问题展示框 */
+.talk-guide-recommend-box {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.talk-guide-content {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1e40af;
+    font-weight: 500;
+    background: rgba(59, 130, 246, 0.08);
+    border-left: 3px solid #3b82f6;
+    padding: 8px 14px;
+    border-radius: 8px;
+    text-align: left;
+    transition: all 0.3s ease;
+}
+
+/* 占位文字 */
+.talk-guide-placeholder {
+    color: #94a3b8;
+    font-size: 12px;
+    font-weight: 400;
+    font-style: italic;
+}
+
+/* 录音按钮 */
+.interrogation-record-soft {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 0 4px;
+    position: relative;
+    width: 100%;
+}
+
+.interrogation-mic-btn {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45),
+                0 0 0 5px rgba(59, 130, 246, 0.12);
+    transition: all 0.25s ease;
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+}
+
+.interrogation-mic-btn i {
+    color: #ffffff;
+    font-size: 24px;
+    position: relative;
+    z-index: 2;
+}
+
+.interrogation-mic-btn .interrogation-mic-ring {
+    position: absolute;
+    top: -7px;
+    left: -7px;
+    right: -7px;
+    bottom: -7px;
+    border-radius: 50%;
+    border: 2px solid rgba(59, 130, 246, 0.4);
+    animation: interrogation-mic-pulse 2s ease-in-out infinite;
+    z-index: 1;
+}
+
+@keyframes interrogation-mic-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.15); opacity: 0.2; }
+}
+
+.interrogation-mic-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 28px rgba(59, 130, 246, 0.55),
+                0 0 0 7px rgba(59, 130, 246, 0.1);
+}
+
+.interrogation-mic-btn:active {
+    transform: scale(0.95);
+}
+
+.interrogation-mic-btn.recording {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.45),
+                0 0 0 5px rgba(239, 68, 68, 0.15);
+}
+
+.interrogation-mic-btn.recording .interrogation-mic-ring {
+    border-color: rgba(239, 68, 68, 0.5);
+    animation: interrogation-mic-pulse 1s ease-in-out infinite;
+}
+
+/* 状态文字 */
+.interrogation-status-text {
+    font-size: 12px;
+    color: #64748b;
+    margin: 0;
+    letter-spacing: 0.3px;
+}
+
+/* 完成按钮 */
+.interrogation-finish-btn {
+    width: 100%;
+    max-width: 220px;
+    padding: 11px 28px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: #ffffff;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+    margin-top: 6px;
+}
+
+.interrogation-finish-btn i {
+    font-size: 12px;
+    color: #ffffff;
+}
+
+.interrogation-finish-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+.interrogation-finish-btn:active {
+    transform: translateY(0);
+}
+
+/* ============ 响应式 ============ */
+@media (max-width: 1200px) {
+    .interrogation-grid {
+        padding: 16px 18px;
+        gap: 14px;
+    }
+
+    .interrogation-card-soft {
+        padding: 18px 22px;
+    }
+
+    .interrogation-question-box {
+        padding: 22px 18px;
+    }
+}
+
+@media (max-width: 900px) {
+    .interrogation-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto auto;
+        grid-template-areas:
+            "q1         q2"
+            "info       summary"
+            "transcript transcript";
+        overflow-y: auto;
+    }
+
+    .interrogation-card-transcript {
+        min-height: 300px;
+    }
+}
+
+@media (max-width: 640px) {
+    .interrogation-grid {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "q1"
+            "q2"
+            "info"
+            "summary"
+            "transcript";
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .interrogation-card-soft {
+        padding: 14px 16px;
+        gap: 10px;
+    }
+}
+
+/* ============ 新建谈心谈话选择弹窗 ============ */
+.conversation-start-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.conversation-start-modal.active {
+    display: flex;
+}
+
+.conversation-start-box {
+    background: #ffffff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 540px;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+}
+
+.conversation-start-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    flex-shrink: 0;
+}
+
+.conversation-start-header h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.conversation-start-close {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: #9ca3af;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.conversation-start-close:hover {
+    background: #fee2e2;
+    color: #ef4444;
+    border-color: #fecaca;
+}
+
+.conversation-start-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.conversation-field {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.conversation-label {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.conversation-label i {
+    color: #3b82f6;
+    font-size: 11px;
+}
+
+.conversation-label .required {
+    color: #ef4444;
+}
+
+/* 谈话类型选项 */
+.conversation-type-options {
+    display: flex;
+    gap: 8px;
+}
+
+.conversation-type-option {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 10px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.conversation-type-option:hover {
+    background: #eff6ff;
+    border-color: #93c5fd;
+}
+
+.conversation-type-option input[type="radio"] {
+    margin: 0 6px 0 0;
+    accent-color: #3b82f6;
+    cursor: pointer;
+}
+
+.conversation-type-option span {
+    font-size: 12px;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.conversation-type-option span i {
+    color: #3b82f6;
+    font-size: 12px;
+}
+
+.conversation-type-option input[type="radio"]:checked + span {
+    color: #1e40af;
+    font-weight: 600;
+}
+
+.conversation-type-option input[type="radio"]:checked ~ span,
+.conversation-type-option:has(input:checked) span {
+    color: #1e40af;
+    font-weight: 600;
+}
+
+/* 谈话人选项 */
+.conversation-interviewer-options {
+    display: flex;
+    gap: 10px;
+}
+
+.conversation-interviewer-option {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 12px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.conversation-interviewer-option:hover {
+    background: #eff6ff;
+    border-color: #93c5fd;
+}
+
+.conversation-interviewer-option input[type="radio"] {
+    margin: 0 8px 0 0;
+    accent-color: #3b82f6;
+    cursor: pointer;
+}
+
+.conversation-interviewer-option span {
+    font-size: 12px;
+    color: #374151;
+    white-space: nowrap;
+}
+
+/* 学生列表 */
+.conversation-student-list {
+    max-height: 280px;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: min-content;
+    gap: 8px;
+    padding: 14px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+}
+
+.conversation-student-loading {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px;
+    color: #9ca3af;
+    font-size: 12px;
+}
+
+.conversation-student-empty {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px;
+    color: #9ca3af;
+    font-size: 12px;
+}
+
+/* ============ 学生卡片（网格布局） ============ */
+.conversation-student-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.conversation-student-card:hover {
+    border-color: #3b82f6;
+    background: #f0f5ff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.conversation-student-card.selected {
+    border-color: #3b82f6;
+    background: #eff6ff;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.conversation-student-card-photo {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+    border: 1px solid #bfdbfe;
+}
+
+.conversation-student-card-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.conversation-student-card-photo i {
+    font-size: 14px;
+    color: #60a5fa;
+}
+
+.conversation-student-card-name {
+    font-size: 12px;
+    color: #374151;
+    font-weight: 500;
+    text-align: left;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.conversation-student-card.selected .conversation-student-card-name {
+    color: #1e40af;
+    font-weight: 600;
+}
+
+
+/* 弹窗底部按钮 */
+.conversation-start-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px 20px;
+    border-top: 1px solid #e5e7eb;
+    background: #ffffff;
+    flex-shrink: 0;
+}
+
+.conversation-start-btn {
+    padding: 9px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.conversation-start-btn-cancel {
+    background: #ffffff;
+    color: #4b5563;
+    border: 1px solid #d1d5db;
+}
+
+.conversation-start-btn-cancel:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.conversation-start-btn-confirm {
+    background: #3b82f6;
+    color: #ffffff;
+    border: 1px solid #3b82f6;
+}
+
+.conversation-start-btn-confirm:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+.conversation-start-btn-confirm:disabled {
+    background: #93c5fd;
+    border-color: #93c5fd;
+    cursor: not-allowed;
+}
+
+/* 响应式 */
+@media (max-width: 640px) {
+    .conversation-start-box {
+        max-height: 95vh;
+    }
+
+    .conversation-interviewer-options {
+        flex-direction: column;
+    }
+
+    .conversation-start-body {
+        padding: 14px 16px;
+        gap: 14px;
+    }
+}
+
+/* ============ 新建谈心谈话独立页面（替代旧弹窗） ============ */
+
+.view-start-conversation {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+    padding: 24px;
+    display: none;
+}
+
+.view-start-conversation.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.start-conversation-container {
+    max-width: 720px;
+    width: 100%;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 12px 40px rgba(59, 130, 246, 0.12);
+    border: 1px solid #e0e7ff;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.start-conversation-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+    flex-shrink: 0;
+}
+
+.start-conversation-header h2 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e3a8a;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.start-conversation-header h2 i {
+    color: #3b82f6;
+}
+
+.start-conversation-back {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    color: #6b7280;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.start-conversation-back:hover {
+    background: #fee2e2;
+    color: #ef4444;
+    border-color: #fecaca;
+}
+
+.start-conversation-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.start-conversation-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 28px;
+    border-top: 1px solid #e5e7eb;
+    background: #ffffff;
+    flex-shrink: 0;
+}
+
+.start-conversation-btn {
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+}
+
+.start-conversation-btn-cancel {
+    background: #ffffff;
+    color: #4b5563;
+    border: 1px solid #d1d5db;
+}
+
+.start-conversation-btn-cancel:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.start-conversation-btn-confirm {
+    background: #3b82f6;
+    color: #ffffff;
+    border: 1px solid #3b82f6;
+}
+
+.start-conversation-btn-confirm:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.start-conversation-btn-confirm:disabled {
+    background: #93c5fd;
+    border-color: #93c5fd;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+@media (max-width: 640px) {
+    .view-start-conversation {
+        padding: 16px;
+    }
+
+    .start-conversation-body {
+        padding: 18px 20px;
+        gap: 16px;
+    }
+
+    .start-conversation-header {
+        padding: 8px 12px;
+    }
+
+    .start-conversation-footer {
+        padding: 14px 20px;
+    }
+}
+
+/* ============ 问题原因卡片翻页热区 ============ */
+.guide-nav-zone {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50px;
+    cursor: pointer;
+    z-index: 10;
+    transition: background 0.25s ease;
+}
+
+.guide-nav-left {
+    left: 0;
+    border-radius: 22px 0 0 22px;
+}
+
+.guide-nav-right {
+    right: 0;
+    border-radius: 0 22px 22px 0;
+}
+
+.guide-nav-zone:not(.disabled):hover {
+    background: rgba(59, 130, 246, 0.06);
+}
+
+.guide-nav-zone.disabled {
+    cursor: default;
+    opacity: 0.25;
+}
+
+/* ============ 边缘蓝色光影线条 ============ */
+.guide-nav-glow {
+    position: absolute;
+    top: 15%;
+    bottom: 15%;
+    width: 2px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.guide-nav-left .guide-nav-glow {
+    left: 0;
+    background: linear-gradient(180deg,
+        transparent 0%,
+        rgba(59, 130, 246, 0.5) 25%,
+        rgba(59, 130, 246, 0.7) 50%,
+        rgba(59, 130, 246, 0.5) 75%,
+        transparent 100%);
+}
+
+.guide-nav-right .guide-nav-glow {
+    right: 0;
+    background: linear-gradient(180deg,
+        transparent 0%,
+        rgba(59, 130, 246, 0.5) 25%,
+        rgba(59, 130, 246, 0.7) 50%,
+        rgba(59, 130, 246, 0.5) 75%,
+        transparent 100%);
+}
+
+.guide-nav-zone:not(.disabled):hover .guide-nav-glow {
+    opacity: 0.45;
+}
+
+.guide-nav-zone.flashing .guide-nav-glow {
+    opacity: 1;
+    animation: guide-glow-pulse 0.35s ease-out;
+}
+
+@keyframes guide-glow-pulse {
+    0% {
+        opacity: 1;
+        box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+    }
+    100% {
+        opacity: 0.45;
+        box-shadow: none;
+    }
+}
+
+/* ============ 页码指示器 ============ */
+.guide-pagination {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+}
+
+.guide-pagination.visible {
+    opacity: 1;
+}
+
+.guide-page-current {
+    color: #3b82f6;
+    font-weight: 600;
+}

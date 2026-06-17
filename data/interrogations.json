@@ -1,0 +1,88 @@
+{
+  "interrogations": [
+    {
+      "id": "int_1781672031637_yvmeb9",
+      "name": "陈 - 同学日常交流",
+      "createdAt": "2026-06-17T04:53:51.637Z",
+      "metadata": {
+        "studentId": "陈_202524552",
+        "studentName": "陈",
+        "studentInfo": {
+          "name": "陈",
+          "team": "数据二区",
+          "studentId": "202524552",
+          "gender": "男",
+          "birthday": "2026-06-18",
+          "college": "信网学院",
+          "major": "数据",
+          "origin": "中国",
+          "photo": "photo.jpg"
+        },
+        "conversationType": "daily",
+        "conversationTypeLabel": "同学日常交流",
+        "interviewer": "学业辅导员",
+        "startTime": "2026-06-17T04:53:51.630Z"
+      },
+      "data": {
+        "recordContent": "",
+        "transcribedText": "",
+        "recommendedQuestions": [
+          null,
+          "",
+          null,
+          null,
+          null
+        ],
+        "workflow1History": []
+      }
+    },
+    {
+      "id": "int_1781674357172_tkzsq8",
+      "name": "陈 - 学业情况谈心谈话",
+      "createdAt": "2026-06-17T05:32:37.173Z",
+      "metadata": {
+        "studentId": "陈_202524552",
+        "studentName": "陈",
+        "studentInfo": {
+          "name": "陈",
+          "team": "数据二区",
+          "studentId": "202524552",
+          "gender": "男",
+          "birthday": "2026-06-18",
+          "college": "信网学院",
+          "major": "数据",
+          "origin": "中国",
+          "photo": "photo.jpg"
+        },
+        "conversationType": "academic",
+        "conversationTypeLabel": "学业情况谈心谈话",
+        "interviewer": "学业辅导员",
+        "startTime": "2026-06-17T05:32:37.148Z"
+      },
+      "data": {
+        "recordContent": "",
+        "transcribedText": "临近期末最近学习和生活状态如何，复习压力大不大？谢谢老师。谢谢老师关心，我最近复习确实感觉精神很紧绷，因为最近很多的事情很多的必修课都在这周完成。嗯但是对于晚上来说，我们会开小灯，宿舍的学习氛围也非常好。能具体说说最近是哪些事情让您觉得精神紧绷或者复习压力主要来来自哪里呢？是这样的老师，我的主要压力来自于课程上的学习，就比如说高等数学或者是线性代数，再或者是说大学英语这些必修课，我觉得高等数学有时候会遇到做题不顺的情况。视觉效果不够强，那怎么办？但是如果什么手动切换，嗯现在就是这样，嘛你看它先像上生成一点。之前的话是。",
+        "recommendedQuestions": [
+          null,
+          "",
+          null,
+          null,
+          null
+        ],
+        "workflow1History": [
+          {
+            "content": "你觉得在视觉效果方面，具体是哪些地方让你觉得不够强呢？",
+            "tag": "学业情况",
+            "reason": "学生提到了具体的项目或作业（如PPT、视频等）存在不足，需要进一步询问细节以了解其遇到的困难和当前的解决思路。"
+          },
+          {
+            "content": "你刚才提到视觉效果不够强，具体是觉得哪里让你感到最困扰或者最不满意呢？",
+            "tag": "学业情况",
+            "reason": "学生正在讨论具体的技术或项目问题（如生成效果、手动切换），这属于学习或任务执行中的困难，需要进一步挖掘细节以了解其遇到的具体障碍。"
+          }
+        ]
+      }
+    }
+  ],
+  "activeId": "int_1781674357172_tkzsq8"
+}

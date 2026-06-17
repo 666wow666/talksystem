@@ -1,0 +1,39 @@
+/**
+ * 主样式入口文件
+ * 按依赖顺序导入所有CSS模块
+ */
+
+/* 1. 基础样式 */
+@import 'base.css';
+
+/* 2. 侧边栏 */
+@import 'sidebar.css';
+
+/* 3. 工作区 */
+@import 'workspace.css';
+
+/* 4. 面板组件 */
+@import 'panel.css';
+
+/* 5. 组件样式 */
+@import 'toolbar.css';
+@import 'record.css';
+@import 'workflow.css';
+@import 'history.css';
+@import 'recording.css';
+@import 'result.css';
+@import 'chat.css';
+@import 'buttons.css';
+@import 'export.css';
+@import 'modal.css';
+@import 'fullscreen.css';
+@import 'header.css';
+
+/* 6. 学生档案 */
+@import 'student-archive.css';
+
+/* 7. 个人画像 */
+@import 'profile.css';
+
+/* 8. 谈话记录 */
+@import 'interrogation.css';

@@ -4,6 +4,9 @@
  * 根据审讯录音内容和基本信息，自动生成规范的询问笔录文档
  */
 (function() {
+    // 保存当前的基本信息，用于生成头部
+    var currentBasicInfo = null;
+
     /**
      * HTML转义函数，防止XSS攻击
      * @param {string} text - 待转义的文本
@@ -17,11 +20,29 @@
     }
 
     /**
+     * 生成笔录头部模板
+     * @param {Object} basicInfo - 基本信息对象
+     * @returns {string} - 填充好基本信息的头部模板
+     */
+    function generateRecordHeader(basicInfo) {
+        if (!basicInfo) {
+            basicInfo = {};
+        }
+        return `时间:____年___月___日___时___分至____年___月___日___时___分
+询问/讯问人${'_'.repeat(15)}    被询问/讯问人${'_'.repeat(12)}   性别${basicInfo.gender || '________'}        年龄${basicInfo.age || '________'}        出生日期${basicInfo.birthDate || '________________'}
+身份证件种类及号码${(basicInfo.idCard || '____________________________')}                             ${basicInfo.isNPCDeputy === '是' ? '☑' : '□'}是${basicInfo.isNPCDeputy === '否' ? '☑' : '□'}否人大代表
+现住址${basicInfo.address || '________________________'}                                    联系方式${basicInfo.phone || '________________'}
+户籍所在地${basicInfo.registeredAddress || '________________________'}
+（口头传唤∕被扭送∕自动投案的被询问/讯问人____月___日___时__分到达，____月___日___时___分离开，本人签名___________）。`;
+    }
+
+    /**
      * 发送文本到工作流2生成笔录
      * @param {string} text - 录音转写文本
      * @param {Object} basicInfo - 基本信息对象
      */
     function sendToWorkflow2(text, basicInfo) {
+        currentBasicInfo = basicInfo;
         var recordOutput = document.getElementById('record-output');
         if (!recordOutput) return;
         recordOutput.innerHTML = '<p>正在生成笔录...</p>';
@@ -33,6 +54,7 @@
                 '身份证号：' + (basicInfo.idCard || '-') + '\n' +
                 '出生日期：' + (basicInfo.birthDate || '-') + '\n' +
                 '年龄：' + (basicInfo.age || '-') + '\n' +
+                '性别：' + (basicInfo.gender || '-') + '\n' +
                 '住址：' + (basicInfo.address || '-') + '\n' +
                 '户籍所在地：' + (basicInfo.registeredAddress || '-') + '\n' +
                 '联系方式：' + (basicInfo.phone || '-') + '\n' +
@@ -151,8 +173,13 @@
         if (placeholder) placeholder.style.display = 'none';
         text = text.trim();
         if (!text) text = '文档内容为空';
-        var lines = text.split('\n');
-        var html = '<div style="font-family: 仿宋, FangSong, serif; font-size: 16px; line-height: 2; padding: 20px;">';
+        
+        // AI生成时自动添加头部
+        var header = generateRecordHeader(currentBasicInfo);
+        var fullContent = header + '\n' + text;
+        var lines = fullContent.split('\n');
+        
+        var html = '<div style="font-family: 仿宋, FangSong, serif; line-height: 2; padding: 20px;">';
         lines.forEach(function(line) {
             if (line.trim()) {
                 html += '<p>' + escapeHtml(line) + '</p>';
@@ -167,8 +194,45 @@
         console.log('[工作流2] 文本已显示，行数:', lines.length);
     }
 
+    /**
+     * 暴露给外部手动插入笔录头部的函数
+     * 将头部添加到现有内容的最顶部，不覆盖
+     * @param {Object} basicInfo - 基本信息对象
+     */
+    function insertRecordHeader(basicInfo) {
+        var recordOutput = document.getElementById('record-output');
+        if (!recordOutput) return;
+        
+        var placeholder = recordOutput.querySelector('.record-placeholder');
+        if (placeholder) placeholder.style.display = 'none';
+        
+        var header = generateRecordHeader(basicInfo);
+        var headerHtml = '<div style="font-family: 仿宋, FangSong, serif; line-height: 2; padding: 20px;">';
+        var lines = header.split('\n');
+        lines.forEach(function(line) {
+            if (line.trim()) {
+                headerHtml += '<p>' + escapeHtml(line) + '</p>';
+            } else {
+                headerHtml += '<p>&nbsp;</p>';
+            }
+        });
+        headerHtml += '</div>';
+        
+        // 如果已有内容，将头部添加到最顶部；否则替换
+        var hasContent = recordOutput.classList.contains('has-content') && recordOutput.innerHTML.trim();
+        if (hasContent) {
+            recordOutput.innerHTML = headerHtml + recordOutput.innerHTML;
+        } else {
+            recordOutput.innerHTML = headerHtml;
+            recordOutput.classList.add('has-content');
+        }
+    }
+
     // 暴露公共接口供外部调用
     window.Workflow2Module = {
-        send: sendToWorkflow2
+        send: sendToWorkflow2,
+        generateRecordHeader: generateRecordHeader,
+        insertRecordHeader: insertRecordHeader,
+        setCurrentBasicInfo: function(info) { currentBasicInfo = info; }
     };
 })();

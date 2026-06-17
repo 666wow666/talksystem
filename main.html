@@ -4,278 +4,460 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>云讯智警</title>
+    <title>谈心谈话系统</title>
+ 
+    <!-- 外部库 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="public/js/anime.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="public/css/base.css">
-    <link rel="stylesheet" href="public/css/toolbar.css">
-    <link rel="stylesheet" href="public/css/buttons.css">
-    <link rel="stylesheet" href="public/css/recording.css">
-    <link rel="stylesheet" href="public/css/result.css">
-    <link rel="stylesheet" href="public/css/chat.css">
-    <link rel="stylesheet" href="public/css/panel.css">
-    <link rel="stylesheet" href="public/css/workflow.css">
-    <link rel="stylesheet" href="public/css/record.css">
-    <link rel="stylesheet" href="public/css/history.css">
-    <link rel="stylesheet" href="public/css/export.css">
-    <link rel="stylesheet" href="public/css/modal.css">
-    <link rel="stylesheet" href="public/css/header.css">
-    <link rel="stylesheet" href="public/css/data-collect.css">
-    <link rel="stylesheet" href="public/css/fullscreen.css">
+ 
+    <!-- 主样式入口 -->
+    <link rel="stylesheet" href="public/css/main.css?v=2.0.0">
+ 
+    <style>
+        html, body.app-body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            background: #eef2f7;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif;
+            color: #2c3e50;
+        }
+
+        .app-shell {
+            display: flex;
+            height: 100vh;
+            padding-left: 185px;
+            box-sizing: border-box;
+            transition: padding-left 0.2s ease;
+        }
+    </style>
 </head>
-<body class="p-4 md:p-6 pb-10">
-    <div class="bg-grid"></div>
-
-    <header class="main-header">
-        <div class="header-tools header-tools-left">
-            <button id="btn_control" class="header-record-btn" aria-label="开始录音">
-                <svg id="mic-icon" class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                    <line x1="12" y1="19" x2="12" y2="23"></line>
-                    <line x1="8" y1="23" x2="16" y2="23"></line>
-                </svg>
-                <div id="recording-dots" class="recording-dots">
-                    <span></span><span></span><span></span>
-                </div>
-            </button>
-        </div>
-
-        <div class="header-title title-animate">
-            <div class="title-wrapper">
-                <h1 class="title-text">云讯智警</h1>
-                <div class="title-sub">智能审讯平台</div>
-            </div>
-        </div>
-
-        <div class="header-tools header-tools-right">
-            <button id="generate-record-btn" class="header-action-btn header-action-primary" title="生成笔录">
-                生成笔录
-            </button>
-            <button id="export-record-btn" class="header-action-btn header-action-success" title="导出.doc">
-                导出笔录
-            </button>
-            <button id="export-result-btn" class="header-action-btn header-action-secondary" title="导出录音">
-                导出录音
-            </button>
-            <button id="basic-info-btn" class="header-action-btn header-action-info" title="基本信息">
-                基本信息
-            </button>
-        </div>
-    </header>
-
-    <div class="main-container flex gap-4 max-w-7xl mx-auto">
-        <div class="left-panel w-1/2">
-            <div class="panel h-full flex flex-col panel-animate" style="min-height: 850px; animation-delay: 0.05s;">
-                <div class="panel-header panel-header-purple">
-                    <i class="fas fa-scroll mr-2"></i>笔录
-                    <button class="fullscreen-btn" onclick="openWorkflow2Fullscreen()" title="放大">
-                        <i class="fas fa-expand"></i>
-                    </button>
-                </div>
-                <div class="panel-body flex flex-col h-full">
-                    <div class="record-wrapper">
-                        <div class="record-toolbar">
-                            <button class="toolbar-btn" onclick="formatDoc('bold')" title="加粗">
-                                <i class="fas fa-bold"></i>
-                            </button>
-                            <button class="toolbar-btn" onclick="formatDoc('italic')" title="斜体">
-                                <i class="fas fa-italic"></i>
-                            </button>
-                            <button class="toolbar-btn" onclick="formatDoc('underline')" title="下划线">
-                                <i class="fas fa-underline"></i>
-                            </button>
-                            <div style="width: 1px; height: 24px; background: #e2e8f0; margin: 0 8px;"></div>
-                            <span class="text-sm text-gray-600 font-bold mr-2">字号</span>
-                            <select class="toolbar-select" onchange="formatDoc('fontSize', this.value); this.value='';">
-                                <option value="">选择</option>
-                                <option value="1">10px</option>
-                                <option value="2">12px</option>
-                                <option value="3">14px</option>
-                                <option value="4">16px</option>
-                                <option value="5">18px</option>
-                                <option value="6">20px</option>
-                                <option value="7">24px</option>
-                                <option value="8">28px</option>
-                            </select>
-                            <div style="width: 1px; height: 24px; background: #e2e8f0; margin: 0 8px;"></div>
-                            <span class="text-sm text-gray-600 font-bold mr-2">字体</span>
-                            <select class="toolbar-select" onchange="formatDoc('fontName', this.value); this.value='';">
-                                <option value="">选择</option>
-                                <option value="仿宋">仿宋</option>
-                                <option value="宋体">宋体</option>
-                                <option value="黑体">黑体</option>
-                                <option value="微软雅黑">微软雅黑</option>
-                            </select>
-                            <div style="width: 1px; height: 24px; background: #e2e8f0; margin: 0 8px;"></div>
-                            <button class="toolbar-btn" onclick="formatDoc('justifyLeft')" title="左对齐">
-                                <i class="fas fa-align-left"></i>
-                            </button>
-                            <button class="toolbar-btn" onclick="formatDoc('justifyCenter')" title="居中">
-                                <i class="fas fa-align-center"></i>
-                            </button>
-                            <button class="toolbar-btn" onclick="formatDoc('justifyRight')" title="右对齐">
-                                <i class="fas fa-align-right"></i>
-                            </button>
-                        </div>
-                        <div id="record-output" class="record-output" contenteditable="true">
-                            <div class="record-placeholder">
-                                <i class="fas fa-file-alt"></i>
-                                <span>请在此输入</span>
-                            </div>
-                        </div>
+ 
+<body class="app-body">
+    <div class="app-shell">
+        <!-- ==================== 侧边栏 ==================== -->
+        <aside class="sidebar">
+            <!-- 展开态头部：左侧 logo + 标题，右侧方形收起按钮 -->
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <i class="fas fa-comments sidebar-logo"></i>
+                    <div class="sidebar-title-group">
+                        <div class="sidebar-title">谈心谈话系统</div>
+                        <div class="sidebar-subtitle">智能心理谈话平台</div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="right-panel w-1/2 flex flex-col gap-4">
-            <div class="panel flex-1 panel-animate workflow1-panel" style="animation-delay: 0.1s;">
-                <div class="panel-header panel-header-green">
-                    <i class="fas fa-question-circle mr-2"></i>问题推荐
-                    <button id="history-btn" class="header-history-btn" title="历史记录" onclick="openHistoryPanel()">
-                        <i class="fas fa-history"></i>
-                    </button>
-                </div>
-                <div id="workflow1-content">
-                    <div class="panel-body pb-3 h-full" style="display: flex; flex-direction: column;">
-                        <div class="workflow1-outputs-vertical">
-                            <div class="workflow-output-simple" id="workflow1-q1">
-                                <div class="workflow-output-content" id="workflow1-q1-content"></div>
-                            </div>
-                            <div class="workflow-output-simple" id="workflow1-q2">
-                                <div class="workflow-output-content" id="workflow1-q2-content"></div>
-                            </div>
-                            <div class="workflow-output-simple" id="workflow1-q3">
-                                <div class="workflow-output-content" id="workflow1-q3-content"></div>
-                            </div>
-                            <div class="workflow-output-simple" id="workflow1-q4">
-                                <div class="workflow-output-content" id="workflow1-q4-content"></div>
-                            </div>
-                            <div class="workflow-output-simple" id="workflow1-q5">
-                                <div class="workflow-output-content" id="workflow1-q5-content"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <button id="sidebarCollapseBtn" class="sidebar-collapse-btn" title="收起侧栏">
+                    <i class="fas fa-bars"></i>
+                </button>
             </div>
 
-            <div class="history-panel" id="historyPanel">
-                <div class="history-panel-header">
-                    <h3><i class="fas fa-history"></i> 历史记录</h3>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="history-clear-btn" onclick="clearHistory()" title="清除历史记录">
-                            <i class="fas fa-trash-alt"></i>
+            <!-- 收起态头部：中央 logo（hover 时 logo 隐藏，显示方形展开按钮） -->
+            <div class="sidebar-collapsed-header">
+                <div class="collapsed-logo-area">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <button id="sidebarExpandBtn" class="sidebar-expand-btn" title="展开侧栏">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+
+            <div class="sidebar-menu" id="sidebarMenu">
+                <!-- 谈心谈话 -->
+                <div class="menu-section" data-section="interrogation">
+                    <div class="menu-item menu-item-parent" data-action="select-section" data-section="interrogation">
+                        <i class="fas fa-microphone menu-icon"></i>
+                        <span class="menu-label">谈心谈话</span>
+                        <button class="menu-add-btn" data-action="add-interrogation" title="新建谈话">
+                            <i class="fas fa-plus"></i>
                         </button>
-                        <button id="close-history" class="history-close-btn" onclick="closeHistoryPanel()">
+                    </div>
+                    <div class="menu-children" id="interrogationList"></div>
+                </div>
+
+                <!-- 学生档案 -->
+                <div class="menu-section" data-section="case">
+                    <div class="menu-item menu-item-parent" data-action="select-section" data-section="case">
+                        <i class="fas fa-user-graduate menu-icon"></i>
+                        <span class="menu-label">学生档案</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 收起态：方形图标按钮区（替代原文字菜单） -->
+            <div class="sidebar-collapsed-menu">
+                <div class="collapsed-section-group">
+                    <button class="collapsed-item collapsed-section-item" data-action="collapsed-section" data-section="interrogation" title="谈心谈话">
+                        <i class="fas fa-microphone"></i>
+                        <span class="collapsed-tooltip">谈心谈话</span>
+                    </button>
+                    <button class="collapsed-item collapsed-section-item" data-action="collapsed-section" data-section="case" title="学生档案">
+                        <i class="fas fa-user-graduate"></i>
+                        <span class="collapsed-tooltip">学生档案</span>
+                    </button>
+                </div>
+                <div class="collapsed-section-group" id="collapsedInterrogationList">
+                    <!-- 收起态审讯子项由 JS 动态渲染 -->
+                </div>
+                <div class="collapsed-section-group collapsed-bottom-group">
+                    <button class="collapsed-item collapsed-back-btn" title="返回首页" onclick="window.location.href='/'">
+                        <i class="fas fa-home"></i>
+                        <span class="collapsed-tooltip">返回首页</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 返回首页按钮 -->
+            <div class="sidebar-footer">
+                <button class="sidebar-back-btn" onclick="window.location.href='/'">
+                    <i class="fas fa-home"></i>
+                    <span>返回首页</span>
+                </button>
+            </div>
+        </aside>
+ 
+
+ 
+        <!-- ==================== 主内容区 ==================== -->
+        <main class="main-content">
+            <!-- ==================== 谈心谈话视图 ==================== -->
+            <div class="view view-interrogation active" id="viewInterrogation">
+                <div class="interrogation-empty" id="interrogationEmpty">
+                    <i class="fas fa-plus-circle"></i>
+                    <p>请新建谈心谈话</p>
+                </div>
+                <div class="interrogation-grid" id="interrogationGrid">
+                    <!-- 实时引导卡片（grid 横向两分区：左=标签+问题，右=原因） -->
+                    <div class="interrogation-guide-card" id="guideCard">
+                        <!-- 左侧翻页热区（绝对定位覆盖） -->
+                        <div class="guide-nav-zone guide-nav-left" id="guideNavLeft">
+                            <div class="guide-nav-glow"></div>
+                        </div>
+                        <!-- 左侧：标签 + 推荐问题 -->
+                        <div class="guide-left" id="guideLeft">
+                            <!-- 左上标签 -->
+                            <div class="guide-tag" id="guideTag">心理状态</div>
+                            <!-- 推荐问题 -->
+                            <div class="guide-question" id="guideQuestion">
+                                <i class="fas fa-comment-dots guide-question-placeholder"></i>
+                            </div>
+                        </div>
+                        <!-- 右侧：原因说明 -->
+                        <div class="guide-reason" id="guideReason">
+                            <div class="guide-reason-label">原因</div>
+                            <div class="guide-reason-text" id="guideReasonText">
+                                <span class="guide-reason-placeholder">等待语音输入...</span>
+                            </div>
+                        </div>
+                        <!-- 右侧翻页热区（绝对定位覆盖） -->
+                        <div class="guide-nav-zone guide-nav-right" id="guideNavRight">
+                            <div class="guide-nav-glow"></div>
+                        </div>
+                        <!-- 页码指示器 -->
+                        <div class="guide-pagination" id="guidePagination">
+                            <span class="guide-page-current">1</span>
+                            <span class="guide-page-divider">/</span>
+                            <span class="guide-page-total">1</span>
+                        </div>
+                    </div>
+
+                    <!-- 中上：问题推荐 2 （保留占位，用于未来扩展） -->
+                    <div class="interrogation-question-box interrogation-card-question interrogation-card-placeholder" id="workflow1-q2" style="display:none;">
+                        <div class="interrogation-question-content" id="workflow1-q2-content">
+                            <i class="fas fa-comment-dots interrogation-question-placeholder"></i>
+                        </div>
+                    </div>
+
+                    <!-- 右侧（跨两行）：对话转写 -->
+                    <div class="interrogation-card-soft interrogation-card-transcript">
+                        <div class="interrogation-transcript-header-soft">
+                            <span class="interrogation-soft-dot"></span>
+                            <span>对话转写</span>
+                        </div>
+                        <div class="interrogation-transcript-content" id="interrogationTranscriptContent">
+                            <div class="interrogation-transcript-placeholder">
+                                <i class="fas fa-microphone-alt"></i>
+                                <p>录音转写内容将显示在这里</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 左下：学生基本信息 + 近期情况 -->
+                    <div class="interrogation-card-soft interrogation-card-student">
+                        <h3 class="interrogation-card-title">基本信息</h3>
+                        <div class="interrogation-student-row">
+                            <i class="fas fa-user-graduate"></i>
+                            <span>姓名: <span id="interrogationStudentName">请先选择学生</span></span>
+                        </div>
+                        <div class="interrogation-student-row">
+                            <i class="fas fa-users"></i>
+                            <span>区队: <span id="interrogationStudentTeam">-</span></span>
+                        </div>
+                        <div class="interrogation-student-row">
+                            <i class="fas fa-id-badge"></i>
+                            <span>学号: <span id="interrogationStudentId">-</span></span>
+                        </div>
+                        <div class="interrogation-student-row">
+                            <i class="fas fa-university"></i>
+                            <span>学院: <span id="interrogationStudentCollege">-</span></span>
+                        </div>
+                        <h3 class="interrogation-card-title">近期情况</h3>
+                        <div class="interrogation-student-block">
+                            <i class="fas fa-chart-line"></i>
+                            <p id="interrogationStudentStatus">本学期前往心理辅导中心咨询三次<br>本月无督条<br>上学期绩点: 3.5</p>
+                        </div>
+                    </div>
+
+                    <!-- 中下：对话要点 + 录音控制 + 完成按钮 -->
+                    <div class="interrogation-card-soft interrogation-card-summary">
+                        <!-- 标题 -->
+                        <div class="interrogation-summary-title">
+                            <span class="interrogation-summary-dot"></span>
+                            对话要点
+                            <span class="interrogation-summary-dot"></span>
+                        </div>
+
+                        <div class="interrogation-summary-list">
+                            <div class="interrogation-summary-item interrogation-summary-item-blue">
+                                <span class="interrogation-summary-item-dot"></span>
+                                <span>近期学业压力较大，睡眠质量一般</span>
+                            </div>
+                            <div class="interrogation-summary-item interrogation-summary-item-green">
+                                <span class="interrogation-summary-item-dot"></span>
+                                <span>对未来有规划，但执行过程中感到迷茫</span>
+                            </div>
+                            <div class="interrogation-summary-item interrogation-summary-item-orange">
+                                <span class="interrogation-summary-item-dot"></span>
+                                <span>人际关系良好，但有时会感到孤独</span>
+                            </div>
+                        </div>
+
+                        <!-- 录音控制 -->
+                        <div class="interrogation-record-soft">
+                            <div class="interrogation-mic-btn" id="interrogationMicBtn" title="点击开始录音">
+                                <div class="interrogation-mic-ring"></div>
+                                <i class="fas fa-microphone"></i>
+                            </div>
+                        </div>
+                        <div class="interrogation-status-text" id="interrogationStatusText">点击麦克风开始录音</div>
+
+                        <!-- 完成按钮 -->
+                        <button class="interrogation-finish-btn" id="interrogationFinishBtn" title="完成谈话并保存记录">
+                            <i class="fas fa-check"></i> 完成
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 学生档案视图 ==================== -->
+            <div class="view view-case" id="viewCase">
+                <div class="student-archive-container">
+                    <div class="student-archive-header">
+                        <h1><i class="fas fa-user-graduate"></i> 学生档案</h1>
+                        <button class="student-add-btn" onclick="StudentArchiveManager.openStudentFormModal()" title="新增学生档案">
+                            <i class="fas fa-plus"></i> 新增
+                        </button>
+                    </div>
+
+                    <div class="student-grid" id="studentGrid">
+                        <div class="case-loading">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>加载中...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 个人画像视图 ==================== -->
+            <div class="view" id="viewProfile">
+                <div class="profile-container">
+                    <!-- 右上角：返回 + 导出 -->
+                    <div class="profile-top-actions">
+                        <button class="profile-export-btn" onclick="alert('导出报告功能开发中')">
+                            <i class="fas fa-download"></i> 导出报告
+                        </button>
+                        <button class="profile-back-btn" onclick="navigateToView('case')">
+                            <i class="fas fa-arrow-left"></i> 返回
+                        </button>
+                    </div>
+
+                    <div class="profile-content" id="profileContent">
+                        <div class="profile-empty">
+                            <i class="fas fa-user-circle profile-empty-icon"></i>
+                            <p class="profile-empty-text">请从学生档案中选择一个学生</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 新建谈心谈话视图 ==================== -->
+            <div class="view view-start-conversation" id="viewStartConversation">
+                <div class="start-conversation-container">
+                    <div class="start-conversation-header">
+                        <h2><i class="fas fa-plus-circle"></i> 新建</h2>
+                        <button class="start-conversation-back" onclick="ConversationManager.closeStartModal()">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
-                </div>
-                <div class="history-list" id="historyList">
-                    <div class="history-empty">
-                        <i class="fas fa-inbox"></i>
-                        <p>暂无历史记录</p>
+                    <div class="start-conversation-body">
+                        <!-- 谈话类型 -->
+                        <div class="conversation-field">
+                            <label class="conversation-label"><i class="fas fa-tag"></i> 谈话类型 <span class="required">*</span></label>
+                            <div class="conversation-type-options">
+                                <label class="conversation-type-option">
+                                    <input type="radio" name="conversationType" value="daily" checked>
+                                    <span><i class="fas fa-comments"></i> 同学日常交流</span>
+                                </label>
+                                <label class="conversation-type-option">
+                                    <input type="radio" name="conversationType" value="academic">
+                                    <span><i class="fas fa-graduation-cap"></i> 学业情况谈心谈话</span>
+                                </label>
+                                <label class="conversation-type-option">
+                                    <input type="radio" name="conversationType" value="psychology">
+                                    <span><i class="fas fa-brain"></i> 心理状况谈心谈话</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 谈话人 -->
+                        <div class="conversation-field">
+                            <label class="conversation-label"><i class="fas fa-user-tie"></i> 谈话人 <span class="required">*</span></label>
+                            <div class="conversation-interviewer-options">
+                                <label class="conversation-interviewer-option">
+                                    <input type="radio" name="interviewer" value="中队长" checked>
+                                    <span>中队长</span>
+                                </label>
+                                <label class="conversation-interviewer-option">
+                                    <input type="radio" name="interviewer" value="学业辅导员">
+                                    <span>学业辅导员</span>
+                                </label>
+                                <label class="conversation-interviewer-option">
+                                    <input type="radio" name="interviewer" value="心理副区">
+                                    <span>心理副区</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 选择学生 -->
+                        <div class="conversation-field">
+                            <label class="conversation-label"><i class="fas fa-user-graduate"></i> 选择学生 <span class="required">*</span></label>
+                            <div class="conversation-student-list" id="conversationStudentList">
+                                <div class="conversation-student-loading">
+                                    <i class="fas fa-spinner fa-spin"></i> 加载中...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="start-conversation-footer">
+                        <button class="start-conversation-btn start-conversation-btn-cancel" onclick="ConversationManager.closeStartModal()">
+                            取消
+                        </button>
+                        <button class="start-conversation-btn start-conversation-btn-confirm" id="conversationStartConfirm" onclick="ConversationManager.confirmStart()">
+                            <i class="fas fa-check"></i> 开始谈话
+                        </button>
                     </div>
                 </div>
             </div>
-            <div class="history-overlay" id="historyOverlay" onclick="closeHistoryPanel()"></div>
 
-            <div class="panel flex-1 panel-animate" style="animation-delay: 0.2s;">
-                <div class="panel-header panel-header-blue">
-                    <i class="fas fa-microphone-alt mr-2"></i>对话转写
-                    <button class="fullscreen-btn" onclick="openFullscreen('record-content', '对话转写')" title="放大">
-                        <i class="fas fa-expand"></i>
-                    </button>
-                </div>
-                <div id="record-content">
-                    <div class="panel-body flex flex-col h-full">
-                        <div class="result-container flex-1 w-full">
-                            <pre id="result" class="result-text"></pre>
+        </main>
+    </div>
+
+    <!-- ==================== 学生信息采集弹窗 ==================== -->
+    <div class="student-form-modal" id="studentFormModal">
+        <div class="student-form-box">
+            <div class="student-form-header">
+                <h3><i class="fas fa-user-plus"></i> 新增学生档案</h3>
+                <button class="student-form-close" onclick="StudentArchiveManager.closeStudentFormModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="student-form-body">
+                <!-- 照片上传 -->
+                <div class="student-form-row student-form-photo-row">
+                    <label class="student-form-label">照片</label>
+                    <div class="student-form-photo-area">
+                        <div class="student-form-photo-preview" id="photoPreview">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="student-form-photo-controls">
+                            <label class="student-form-photo-btn">
+                                <i class="fas fa-upload"></i> 上传照片
+                                <input type="file" id="photoFile" accept="image/*" style="display:none;">
+                            </label>
+                            <div class="student-form-photo-hint">建议尺寸 200x200，小于 2MB</div>
                         </div>
                     </div>
                 </div>
+
+                <!-- 姓名 + 区队 -->
+                <div class="student-form-row student-form-row-2">
+                    <div class="student-form-field">
+                        <label class="student-form-label">姓名 <span class="required">*</span></label>
+                        <input type="text" id="form-name" class="student-form-input" placeholder="请输入姓名" maxlength="50">
+                    </div>
+                    <div class="student-form-field">
+                        <label class="student-form-label">区队 <span class="required">*</span></label>
+                        <input type="text" id="form-team" class="student-form-input" placeholder="例如：2024级刑侦一区队" maxlength="100">
+                    </div>
+                </div>
+
+                <!-- 学号 + 性别 -->
+                <div class="student-form-row student-form-row-2">
+                    <div class="student-form-field">
+                        <label class="student-form-label">学号</label>
+                        <input type="text" id="form-studentId" class="student-form-input" placeholder="请输入学号" maxlength="30">
+                    </div>
+                    <div class="student-form-field">
+                        <label class="student-form-label">性别</label>
+                        <div class="student-form-gender">
+                            <label class="student-form-gender-option">
+                                <input type="radio" name="form-gender" value="男" checked>
+                                <span><i class="fas fa-mars"></i> 男</span>
+                            </label>
+                            <label class="student-form-gender-option">
+                                <input type="radio" name="form-gender" value="女">
+                                <span><i class="fas fa-venus"></i> 女</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 出生日期 -->
+                <div class="student-form-row student-form-row-2">
+                    <div class="student-form-field">
+                        <label class="student-form-label">出生日期</label>
+                        <input type="date" id="form-birthday" class="student-form-input" placeholder="YYYY-MM-DD">
+                    </div>
+                    <div class="student-form-field">
+                        <label class="student-form-label">所属学院</label>
+                        <input type="text" id="form-college" class="student-form-input" placeholder="例如：刑事侦查学院" maxlength="100">
+                    </div>
+                </div>
+
+                <!-- 专业 + 生源地 -->
+                <div class="student-form-row student-form-row-2">
+                    <div class="student-form-field">
+                        <label class="student-form-label">专业</label>
+                        <input type="text" id="form-major" class="student-form-input" placeholder="例如：侦查学" maxlength="100">
+                    </div>
+                    <div class="student-form-field">
+                        <label class="student-form-label">生源地</label>
+                        <input type="text" id="form-origin" class="student-form-input" placeholder="例如：北京市海淀区" maxlength="100">
+                    </div>
+                </div>
+            </div>
+            <div class="student-form-footer">
+                <button class="student-form-btn student-form-btn-secondary" onclick="StudentArchiveManager.closeStudentFormModal()">取消</button>
+                <button class="student-form-btn student-form-btn-primary" onclick="StudentArchiveManager.submitStudentForm()">保存</button>
             </div>
         </div>
     </div>
 
-    <script>
-        // ==================== 全局变量 ====================
-        window.APPID = '';           // 讯飞应用ID
-        window.API_KEY = '';         // 讯飞API密钥
-        var configLoaded = false;    // 配置加载状态标志
-        var initPending = false;     // 初始化等待标志
+    <!-- 新建谈心谈话页面已移至 main-content 内作为独立视图 -->
 
-        // ==================== 应用初始化系统 ====================
-
-        /**
-         * 初始化应用主函数
-         * 等待MainModule加载完成后调用其init方法
-         * 使用轮询机制确保模块加载完成
-         */
-        function initializeApp() {
-            if (window.MainModule && window.MainModule.init) {
-                window.MainModule.init();
-                console.log('✓ 应用初始化完成');
-            } else {
-                // 如果模块未加载，设置标志并延迟100ms后重试
-                if (!initPending) {
-                    initPending = true;
-                    setTimeout(initializeApp, 100);
-                }
-            }
-        }
-
-        /**
-         * 加载配置并初始化应用
-         * 从服务器获取讯飞配置信息，然后调用initializeApp
-         */
-        function loadConfigAndInit() {
-            fetch('/api/config')
-                .then(function(response) {
-                    if (!response.ok) {
-                        throw new Error('配置请求失败 (HTTP ' + response.status + ')');
-                    }
-                    return response.json();
-                })
-                .then(function(config) {
-                    // 保存讯飞配置到全局变量
-                    window.APPID = config.xfyunAppId || '';
-                    window.API_KEY = config.xfyunApiKey || '';
-                    configLoaded = true;
-                    console.log('✓ 配置已加载');
-                })
-                .catch(function(error) {
-                    console.error('✗ 获取配置失败:', error.message);
-                })
-                .finally(function() {
-                    // 无论成功失败都继续初始化
-                    initializeApp();
-                });
-        }
-
-        // ==================== 认证检查系统 ====================
-
-        /**
-         * 页面加载时检查认证状态
-         * 验证用户是否已完成认证和基本信息填写
-         * 未认证则重定向到认证页面
-         */
-        (function checkAuth() {
-            var authed = localStorage.getItem('authed');
-            var basicInfoFilled = localStorage.getItem('basicInfoFilled');
-            
-            if (!authed || !basicInfoFilled) {
-                window.location.replace('auth.html');
-            }
-        })();
-        
-        // 启动配置加载和应用初始化
-        loadConfigAndInit();
-    </script>
-
+    <!-- ==================== 外部JS库 ==================== -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="public/js/md5.js"></script>
@@ -283,892 +465,17 @@
     <script src="public/js/HmacSHA1.js"></script>
     <script src="public/js/enc-base64-min.js"></script>
     <script src="public/js/recorder-manager.js"></script>
+ 
+    <!-- ==================== 功能模块（按依赖顺序） ==================== -->
     <script src="public/js/modules/speech-recorder.js"></script>
     <script src="public/js/modules/speech-recognition.js"></script>
-    <script src="public/js/modules/history.js"></script>
-    <script src="public/js/modules/workflow1.js"></script>
+    <script src="public/js/modules/talkGuideManager.js"></script>
     <script src="public/js/modules/workflow2.js"></script>
     <script src="public/js/modules/export.js"></script>
-    <script src="public/js/modules/main.js"></script>
-
-    <div class="basic-info-modal" id="basicInfoModal">
-        <div class="basic-info-box">
-            <div class="basic-info-header">
-                <h3><i class="fas fa-id-card"></i> 基本信息</h3>
-                <button class="basic-info-close" onclick="closeBasicInfoModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="basic-info-body">
-                <div class="info-display-area" id="infoDisplayArea">
-                    <div class="info-section">
-                        <div class="info-section-title">询问人信息</div>
-                        <div class="info-row">
-                            <div class="info-item">
-                                <div class="info-label">询问人姓名</div>
-                                <div class="info-value" id="displayInquirerName">-</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="info-section">
-                        <div class="info-section-title">被询问人信息</div>
-                        <div class="info-row">
-                            <div class="info-item">
-                                <div class="info-label">姓名</div>
-                                <div class="info-value" id="displayRespondentName">-</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">身份证号</div>
-                                <div class="info-value" id="displayIdCard">-</div>
-                            </div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-item">
-                                <div class="info-label">出生日期</div>
-                                <div class="info-value" id="displayBirthDate">-</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">年龄</div>
-                                <div class="info-value" id="displayAge">-</div>
-                            </div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-item">
-                                <div class="info-label">住址</div>
-                                <div class="info-value" id="displayAddress">-</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">户籍所在地</div>
-                                <div class="info-value" id="displayRegisteredAddress">-</div>
-                            </div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-item">
-                                <div class="info-label">联系电话</div>
-                                <div class="info-value" id="displayPhone">-</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">职业</div>
-                                <div class="info-value" id="displayOccupation">-</div>
-                            </div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-item">
-                                <div class="info-label">是否为人大代表</div>
-                                <div class="info-value" id="displayIsNPCDeputy">-</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">与案件关系</div>
-                                <div class="info-value" id="displayCaseRelation">-</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="info-edit-area" id="infoEditArea">
-                    <div class="info-section">
-                        <div class="info-section-title">询问人信息</div>
-                        <div class="info-row">
-                            <div class="info-item">
-                                <div class="info-label">询问人姓名</div>
-                                <input type="text" class="info-input" id="editInquirerName" placeholder="请输入">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="info-section">
-                        <div class="info-section-title">被询问人信息</div>
-                        <div class="info-row">
-                            <div class="info-item">
-                                <div class="info-label">姓名</div>
-                                <input type="text" class="info-input" id="editRespondentName" placeholder="请输入">
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">身份证号</div>
-                                <input type="text" class="info-input" id="editIdCard" placeholder="请输入" maxlength="18">
-                            </div>
-                        </div>
-                        <div class="info-row" id="editBirthAgeRow" style="display: none;">
-                            <div class="info-item">
-                                <div class="info-label">出生日期</div>
-                                <input type="text" class="info-input" id="editBirthDate" readonly placeholder="自动从身份证号推算">
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">年龄</div>
-                                <input type="text" class="info-input" id="editAge" readonly placeholder="自动从身份证号推算">
-                            </div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-item">
-                                <div class="info-label">住址</div>
-                                <input type="text" class="info-input" id="editAddress" placeholder="请输入">
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">户籍所在地</div>
-                                <input type="text" class="info-input" id="editRegisteredAddress" placeholder="请输入">
-                            </div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-item">
-                                <div class="info-label">联系电话</div>
-                                <input type="text" class="info-input" id="editPhone" placeholder="请输入">
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">职业</div>
-                                <input type="text" class="info-input" id="editOccupation" placeholder="请输入">
-                            </div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-item">
-                                <div class="info-label">是否为人大代表</div>
-                                <div class="info-radio-group">
-                                    <label class="info-radio-item">
-                                        <input type="radio" name="editIsNPCDeputy" value="是"> 是
-                                    </label>
-                                    <label class="info-radio-item">
-                                        <input type="radio" name="editIsNPCDeputy" value="否" checked> 否
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">与案件关系</div>
-                                <input type="text" class="info-input" id="editCaseRelation" placeholder="如：嫌疑人、证人、当事人等">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="basic-info-footer" id="infoFooter">
-                <button class="basic-info-btn edit" onclick="switchToEditMode()">
-                    <i class="fas fa-edit mr-1"></i>修改
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // ==================== 按钮事件绑定 ====================
-
-        /**
-         * DOM加载完成后绑定按钮点击事件
-         * 包括：生成笔录、导出笔录、导出录音、基本信息按钮
-         */
-        document.addEventListener('DOMContentLoaded', function() {
-            // 生成笔录按钮：获取录音文本并发送到工作流2
-            document.getElementById('generate-record-btn').addEventListener('click', function() {
-                var recordText = document.getElementById('result').textContent.trim();
-                var recordOutput = document.getElementById('record-output');
-                var savedRecordContent = recordOutput.textContent.trim();
-                
-                // 笔录区已有内容，不重新生成
-                if (savedRecordContent && savedRecordContent !== '请在此输入') {
-                    return; // 静默处理，保持现有内容
-                }
-                
-                // 录音区也没有内容
-                if (!recordText) {
-                    alert('请先录音或手动输入内容');
-                    return;
-                }
-                
-                // 录音区有内容，使用录音内容生成笔录
-                var basicInfo = getBasicInfo();
-                if (window.sendToWorkflow2Manual) {
-                    window.sendToWorkflow2Manual(recordText, basicInfo);
-                }
-            });
-
-            // 导出笔录按钮：显示导出格式选择菜单
-            document.getElementById('export-record-btn').addEventListener('click', function() {
-                showExportMenu();
-            });
-            
-            // 导出录音按钮：调用exportRecording导出录音文本
-            document.getElementById('export-result-btn').addEventListener('click', function() {
-                if (window.exportRecording) {
-                    window.exportRecording();
-                }
-            });
-
-            // 基本信息按钮：打开基本信息编辑弹窗
-            document.getElementById('basic-info-btn').addEventListener('click', function() {
-                openBasicInfoModal();
-            });
-        });
-
-        // ==================== 导出系统 ====================
-
-        /**
-         * 显示导出格式选择菜单
-         * 在按钮下方弹出菜单，提供.doc和.txt两种导出格式
-         */
-        function showExportMenu() {
-            var outputDiv = document.getElementById('record-output');
-            var textContent = outputDiv.textContent.trim();
-            
-            // 检查是否有可导出的内容（包括手动输入的）
-            if (!textContent || textContent === '笔录内容将显示在这里' || textContent === '可点击生成笔录后编辑，或直接在此输入' || textContent === '请在此输入') {
-                alert('请先生成笔录内容或手动输入');
-                return;
-            }
-
-            // 创建导出菜单
-            var menu = document.createElement('div');
-            menu.className = 'export-menu';
-            menu.innerHTML = `
-                <div class="export-menu-content">
-                    <div class="export-menu-title">选择导出格式</div>
-                    <div class="export-menu-options">
-                        <button class="export-menu-btn" onclick="exportRecord('doc')">
-                            <i class="fas fa-file-word"></i>
-                            <span>.doc</span>
-                        </button>
-                        <button class="export-menu-btn" onclick="exportRecord('txt')">
-                            <i class="fas fa-file-alt"></i>
-                            <span>.txt</span>
-                        </button>
-                    </div>
-                </div>
-            `;
-
-            // 点击菜单外部关闭
-            menu.addEventListener('click', function(e) {
-                if (e.target === menu) {
-                    menu.remove();
-                }
-            });
-
-            document.body.appendChild(menu);
-            menu.classList.add('active');
-
-            // 延迟绑定点击外部关闭事件
-            setTimeout(function() {
-                document.addEventListener('click', function closeMenu(e) {
-                    if (!menu.contains(e.target) && e.target.id !== 'export-record-btn') {
-                        menu.remove();
-                        document.removeEventListener('click', closeMenu);
-                    }
-                });
-            }, 10);
-        }
-
-        /**
-         * 执行笔录导出
-         * 根据格式参数调用不同的导出函数
-         * @param {string} format - 导出格式，'doc' 或 'txt'
-         */
-        async function exportRecord(format) {
-            var outputDiv = document.getElementById('record-output');
-            var content = outputDiv.innerHTML.trim();
-            
-            var textContent = outputDiv.textContent.trim();
-            // 排除placeholder提示文字，只要有实际内容就支持导出（包括手动输入的）
-            if (!textContent || textContent === '笔录内容将显示在这里' || textContent === '可点击生成笔录后编辑，或直接在此输入' || textContent === '请在此输入') {
-                alert('请先生成笔录内容或手动输入');
-                return;
-            }
-
-            // 生成文件名（格式：询问笔录_YYYYMMDD_HHmm.doc/txt）
-            var now = new Date();
-            var dateStr = now.getFullYear() + 
-                          String(now.getMonth() + 1).padStart(2, '0') + 
-                          String(now.getDate()).padStart(2, '0') + '_' +
-                          String(now.getHours()).padStart(2, '0') + 
-                          String(now.getMinutes()).padStart(2, '0');
-
-            if (format === 'doc') {
-                await exportAsDoc(content, dateStr);
-            } else if (format === 'txt') {
-                exportAsTxt(outputDiv, dateStr);
-            }
-        }
-
-        /**
-         * 导出为Word文档格式（.docx）
-         * 使用HTML格式生成Word文档，保留原始格式
-         * @param {string} content - HTML内容
-         * @param {string} dateStr - 文件名日期部分
-         */
-        function exportAsDoc(content, dateStr) {
-            try {
-                var htmlContent = `
-<!DOCTYPE html>
-<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
-<head>
-<meta charset="utf-8">
-<title>询问笔录</title>
-<style>
-body { font-family: '仿宋_GB2312', '仿宋', FangSong, SimSun; font-size: 16pt; line-height: 1.8; margin: 2cm 2.5cm 2cm 2cm; }
-h1 { text-align: center; font-size: 20pt; font-weight: bold; margin: 30px 0; }
-</style>
-<!--[if gte mso 9]>
-<xml>
-<w:WordDocument>
-<w:View>Print</w:View>
-</w:WordDocument>
-</xml>
-<![endif]-->
-</head>
-<body>
-<h1>询问笔录</h1>
-${content}
-</body>
-</html>`;
-
-                var blob = new Blob([htmlContent], { type: 'application/msword;charset=utf-8' });
-                var url = URL.createObjectURL(blob);
-                var a = document.createElement('a');
-                a.href = url;
-                a.download = '笔录_' + dateStr + '.doc';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            } catch (error) {
-                console.error('Export error:', error);
-                alert('导出失败，请稍后重试');
-            }
-        }
-
-        /**
-         * 导出为纯文本格式（.txt）
-         * 正确处理HTML元素的换行，保留段落结构
-         * @param {HTMLElement} outputDiv - 笔录内容DOM元素
-         * @param {string} dateStr - 文件名日期部分
-         */
-        function exportAsTxt(outputDiv, dateStr) {
-            /**
-             * 递归遍历DOM元素，提取文本并处理换行
-             */
-            function extractText(node) {
-                var result = '';
-                
-                if (node.nodeType === Node.TEXT_NODE) {
-                    // 文本节点直接添加
-                    result = node.textContent;
-                } else if (node.nodeType === Node.ELEMENT_NODE) {
-                    var tagName = node.tagName.toLowerCase();
-                    
-                    // 块级元素在前后添加换行
-                    if (tagName === 'p' || tagName === 'div' || tagName === 'h1' || 
-                        tagName === 'h2' || tagName === 'h3' || tagName === 'li' || 
-                        tagName === 'br') {
-                        if (tagName === 'br') {
-                            result = '\n';
-                        } else {
-                            // 遍历子节点
-                            for (var i = 0; i < node.childNodes.length; i++) {
-                                result += extractText(node.childNodes[i]);
-                            }
-                            result += '\n';
-                        }
-                    } else {
-                        // 其他元素继续遍历子节点
-                        for (var j = 0; j < node.childNodes.length; j++) {
-                            result += extractText(node.childNodes[j]);
-                        }
-                    }
-                }
-                
-                return result;
-            }
-            
-            // 提取文本
-            var rawText = extractText(outputDiv);
-            
-            // 处理文本，去除多余空格和换行
-            var txtContent = rawText
-                .replace(/[ \t]+\n/g, '\n')  // 行尾空格
-                .replace(/\n[ \t]+/g, '\n')  // 行首空格
-                .replace(/\n{3,}/g, '\n\n')  // 3个以上换行换成2个
-                .trim();
-            
-            // 创建Blob对象并触发下载
-            var blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.href = url;
-            a.download = '询问笔录_' + dateStr + '.txt';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        // ==================== 富文本编辑系统 ====================
-
-        /**
-         * 执行富文本编辑命令
-         * 使用 document.execCommand 实现常见的文本格式化功能
-         * @param {string} cmd - 编辑命令（如：bold、italic、underline等）
-         * @param {*} value - 命令参数值
-         * @param {HTMLElement} targetElement - 目标编辑区域元素
-         */
-        function formatDoc(cmd, value, targetElement) {
-            var target = targetElement || document.getElementById('record-output');
-            if (target) {
-                target.focus();
-                document.execCommand(cmd, false, value);
-            }
-        }
-
-        /**
-         * 监听笔录内容变化
-         * 更新 has-content 类以控制占位符显示/隐藏
-         * 同时自动保存内容到localStorage
-         */
-        var recordOutput = document.getElementById('record-output');
-        recordOutput.addEventListener('input', function() {
-            var text = this.textContent.trim();
-            if (text) {
-                this.classList.add('has-content');
-            } else {
-                this.classList.remove('has-content');
-            }
-            // 自动保存到localStorage（延迟500ms防止频繁保存）
-            if (window.recordSaveTimer) clearTimeout(window.recordSaveTimer);
-            window.recordSaveTimer = setTimeout(saveRecordContent, 500);
-        });
-
-        /**
-         * 页面加载完成后加载保存的笔录内容
-         */
-        document.addEventListener('DOMContentLoaded', function() {
-            loadRecordContent();
-        });
-
-        // ==================== 身份证号处理系统 ====================
-
-        /**
-         * 从身份证号提取出生日期和计算年龄
-         * @param {string} idCard - 18位身份证号
-         * @returns {Object} - 包含birthDate和age的对象
-         */
-        function parseIdCard(idCard) {
-            if (!idCard || idCard.length !== 18) {
-                return { birthDate: '', age: '' };
-            }
-            
-            // 提取出生日期（第7-14位）
-            const year = idCard.substring(6, 10);
-            const month = idCard.substring(10, 12);
-            const day = idCard.substring(12, 14);
-            const birthDateStr = year + '年' + month + '月' + day + '日';
-            
-            // 计算年龄
-            const birthDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-            const today = new Date();
-            let age = today.getFullYear() - birthDate.getFullYear();
-            const monthDiff = today.getMonth() - birthDate.getMonth();
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                age--;
-            }
-            
-            return { birthDate: birthDateStr, age: age + '岁' };
-        }
-
-        /**
-         * 处理身份证号输入变化
-         */
-        function handleEditIdCardChange() {
-            const idCard = document.getElementById('editIdCard').value.trim();
-            const birthAgeRow = document.getElementById('editBirthAgeRow');
-            const birthDateInput = document.getElementById('editBirthDate');
-            const ageInput = document.getElementById('editAge');
-            
-            if (idCard.length === 18) {
-                const result = parseIdCard(idCard);
-                birthDateInput.value = result.birthDate;
-                ageInput.value = result.age;
-                birthAgeRow.style.display = 'flex';
-            } else {
-                birthDateInput.value = '';
-                ageInput.value = '';
-                birthAgeRow.style.display = 'none';
-            }
-        }
-
-        // ==================== 基本信息管理系统 ====================
-
-        /**
-         * 打开基本信息编辑弹窗
-         * 加载已保存的基本信息到显示区域，切换到只读模式
-         */
-        function openBasicInfoModal() {
-            loadBasicInfoToDisplay();
-            document.getElementById('basicInfoModal').classList.add('active');
-            switchToDisplayMode();
-        }
-
-        /**
-         * 关闭基本信息编辑弹窗
-         */
-        function closeBasicInfoModal() {
-            document.getElementById('basicInfoModal').classList.remove('active');
-        }
-
-        /**
-         * 加载基本信息到显示区域
-         * 从localStorage读取数据并填充到各个显示字段
-         */
-        function loadBasicInfoToDisplay() {
-            var savedInfo = localStorage.getItem('basicInfo');
-            var info = savedInfo ? JSON.parse(savedInfo) : {};
-            
-            document.getElementById('displayInquirerName').textContent = info.inquirerName || '-';
-            document.getElementById('displayRespondentName').textContent = info.respondentName || '-';
-            document.getElementById('displayIdCard').textContent = info.idCard || '-';
-            document.getElementById('displayBirthDate').textContent = info.birthDate || '-';
-            document.getElementById('displayAge').textContent = info.age || '-';
-            document.getElementById('displayAddress').textContent = info.address || '-';
-            document.getElementById('displayRegisteredAddress').textContent = info.registeredAddress || '-';
-            document.getElementById('displayPhone').textContent = info.phone || '-';
-            document.getElementById('displayOccupation').textContent = info.occupation || '-';
-            document.getElementById('displayIsNPCDeputy').textContent = info.isNPCDeputy || '-';
-            document.getElementById('displayCaseRelation').textContent = info.caseRelation || '-';
-        }
-
-        /**
-         * 切换到编辑模式
-         * 加载数据到表单字段，显示编辑界面
-         */
-        function switchToEditMode() {
-            var savedInfo = localStorage.getItem('basicInfo');
-            var info = savedInfo ? JSON.parse(savedInfo) : {};
-            
-            // 填充表单字段
-            document.getElementById('editInquirerName').value = info.inquirerName || '';
-            document.getElementById('editRespondentName').value = info.respondentName || '';
-            document.getElementById('editIdCard').value = info.idCard || '';
-            document.getElementById('editBirthDate').value = info.birthDate || '';
-            document.getElementById('editAge').value = info.age || '';
-            document.getElementById('editAddress').value = info.address || '';
-            document.getElementById('editRegisteredAddress').value = info.registeredAddress || '';
-            document.getElementById('editPhone').value = info.phone || '';
-            document.getElementById('editOccupation').value = info.occupation || '';
-            document.getElementById('editCaseRelation').value = info.caseRelation || '';
-            
-            // 设置单选按钮状态
-            var radios = document.getElementsByName('editIsNPCDeputy');
-            for (var i = 0; i < radios.length; i++) {
-                radios[i].checked = radios[i].value === (info.isNPCDeputy || '否');
-            }
-            
-            // 处理身份证号，显示/隐藏出生日期和年龄
-            handleEditIdCardChange();
-            
-            // 绑定身份证号输入事件
-            document.getElementById('editIdCard').addEventListener('input', handleEditIdCardChange);
-            
-            // 切换界面显示
-            document.getElementById('infoDisplayArea').classList.add('hidden');
-            document.getElementById('infoEditArea').classList.add('active');
-            // 更新底部按钮为取消和保存
-            document.getElementById('infoFooter').innerHTML = `
-                <button class="basic-info-btn cancel" onclick="switchToDisplayMode()">
-                    <i class="fas fa-times mr-1"></i>取消
-                </button>
-                <button class="basic-info-btn save" onclick="saveBasicInfo()">
-                    <i class="fas fa-save mr-1"></i>保存
-                </button>
-            `;
-        }
-
-        /**
-         * 切换到只读显示模式
-         * 隐藏编辑区域，显示只读信息
-         */
-        function switchToDisplayMode() {
-            document.getElementById('infoDisplayArea').classList.remove('hidden');
-            document.getElementById('infoEditArea').classList.remove('active');
-            // 更新底部按钮为修改
-            document.getElementById('infoFooter').innerHTML = `
-                <button class="basic-info-btn edit" onclick="switchToEditMode()">
-                    <i class="fas fa-edit mr-1"></i>修改
-                </button>
-            `;
-            // 刷新显示数据
-            loadBasicInfoToDisplay();
-        }
-
-        /**
-         * 保存基本信息
-         * 收集表单数据，保存到localStorage，切换到显示模式
-         */
-        function saveBasicInfo() {
-            var formData = {
-                inquirerName: document.getElementById('editInquirerName').value.trim(),
-                respondentName: document.getElementById('editRespondentName').value.trim(),
-                idCard: document.getElementById('editIdCard').value.trim(),
-                birthDate: document.getElementById('editBirthDate').value.trim(),
-                age: document.getElementById('editAge').value.trim(),
-                address: document.getElementById('editAddress').value.trim(),
-                registeredAddress: document.getElementById('editRegisteredAddress').value.trim(),
-                phone: document.getElementById('editPhone').value.trim(),
-                occupation: document.getElementById('editOccupation').value.trim(),
-                isNPCDeputy: document.querySelector('input[name="editIsNPCDeputy"]:checked').value,
-                caseRelation: document.getElementById('editCaseRelation').value.trim()
-            };
-            
-            // 保存到localStorage
-            localStorage.setItem('basicInfo', JSON.stringify(formData));
-            // 切换回显示模式
-            switchToDisplayMode();
-        }
-
-        /**
-         * 获取基本信息
-         * @returns {Object|null} 基本信息对象或null
-         */
-        function getBasicInfo() {
-            var savedInfo = localStorage.getItem('basicInfo');
-            return savedInfo ? JSON.parse(savedInfo) : null;
-        }
-
-        /**
-         * 获取笔录内容
-         * @returns {string} 笔录HTML内容
-         */
-        function getRecordContent() {
-            var recordOutput = document.getElementById('record-output');
-            return recordOutput ? recordOutput.innerHTML : '';
-        }
-
-        /**
-         * 保存笔录内容到localStorage
-         */
-        function saveRecordContent() {
-            var content = getRecordContent();
-            if (content) {
-                localStorage.setItem('recordContent', content);
-            }
-        }
-
-        /**
-         * 从localStorage加载笔录内容
-         */
-        function loadRecordContent() {
-            var savedContent = localStorage.getItem('recordContent');
-            if (savedContent) {
-                var recordOutput = document.getElementById('record-output');
-                if (recordOutput) {
-                    recordOutput.innerHTML = savedContent;
-                    // 如果有内容，隐藏占位符
-                    var placeholder = recordOutput.querySelector('.record-placeholder');
-                    if (placeholder && recordOutput.textContent.trim()) {
-                        placeholder.style.display = 'none';
-                    }
-                }
-            }
-        }
-
-        // ==================== 历史记录面板系统 ====================
-
-        /**
-         * 打开历史记录面板
-         */
-        function openHistoryPanel() {
-            document.getElementById('historyPanel').classList.add('active');
-            document.getElementById('historyOverlay').classList.add('active');
-        }
-
-        /**
-         * 关闭历史记录面板
-         */
-        function closeHistoryPanel() {
-            document.getElementById('historyPanel').classList.remove('active');
-            document.getElementById('historyOverlay').classList.remove('active');
-        }
-
-        // ==================== 全屏功能系统 ====================
-
-        var fullscreenModal = null;  // 全屏模态框引用
-        var originalParent = null;   // 保存原元素的父元素
-        var originalNextSibling = null; // 保存原元素的下一个兄弟元素
-
-        /**
-         * 打开笔录区域全屏模式
-         * 直接移动原编辑区域到全屏模态框，避免同步问题
-         */
-        function openWorkflow2Fullscreen() {
-            var recordWrapper = document.querySelector('.record-wrapper');
-            if (!recordWrapper) return;
-            
-            var originalRecordOutput = document.getElementById('record-output');
-            var toolbar = recordWrapper.querySelector('.record-toolbar');
-            
-            // 保存原元素的位置信息
-            originalParent = originalRecordOutput.parentNode;
-            originalNextSibling = originalRecordOutput.nextSibling;
-            
-            // 创建全屏模态框
-            fullscreenModal = document.createElement('div');
-            fullscreenModal.className = 'fullscreen-modal';
-            fullscreenModal.id = 'fullscreenModal';
-            
-            // 构建全屏模态框HTML
-            fullscreenModal.innerHTML = 
-                '<div class="fullscreen-content wf2-fullscreen">' +
-                    '<div class="fullscreen-header">' +
-                        '<span>笔录</span>' +
-                        '<button class="fullscreen-close" onclick="closeWorkflow2Fullscreen()">' +
-                            '<i class="fas fa-times"></i>' +
-                        '</button>' +
-                    '</div>' +
-                    '<div class="wf2-fullscreen-body">' +
-                        '<div class="record-toolbar-fullscreen"></div>' +
-                        '<div class="record-output-container"></div>' +
-                    '</div>' +
-                '</div>';
-            
-            // 显示模态框
-            document.body.appendChild(fullscreenModal);
-            
-            // 移动工具栏和编辑区域到全屏模态框
-            var fullscreenToolbarContainer = fullscreenModal.querySelector('.record-toolbar-fullscreen');
-            var fullscreenOutputContainer = fullscreenModal.querySelector('.record-output-container');
-            
-            // 克隆工具栏（保持原工具栏在原位置）
-            var toolbarClone = toolbar.cloneNode(true);
-            fullscreenToolbarContainer.appendChild(toolbarClone);
-            
-            // 移动原编辑区域到全屏模态框
-            fullscreenOutputContainer.appendChild(originalRecordOutput);
-            
-            // 重新绑定工具栏按钮到原编辑区域
-            rebindToolbarButtons(toolbarClone, originalRecordOutput);
-            
-            // 点击背景关闭
-            fullscreenModal.addEventListener('click', function(e) {
-                if (e.target === fullscreenModal) closeWorkflow2Fullscreen();
-            });
-            
-            requestAnimationFrame(function() {
-                fullscreenModal.classList.add('active');
-            });
-        }
-
-        /**
-         * 关闭笔录全屏模式
-         * 将编辑区域移回原位置
-         */
-        function closeWorkflow2Fullscreen() {
-            var modal = document.getElementById('fullscreenModal');
-            if (modal && originalParent) {
-                var recordOutput = document.getElementById('record-output');
-                
-                // 将编辑区域移回原位置
-                if (originalNextSibling) {
-                    originalParent.insertBefore(recordOutput, originalNextSibling);
-                } else {
-                    originalParent.appendChild(recordOutput);
-                }
-                
-                // 移除模态框
-                modal.classList.remove('active');
-                setTimeout(function() { modal.remove(); }, 300);
-                
-                // 清除保存的引用
-                fullscreenModal = null;
-                originalParent = null;
-                originalNextSibling = null;
-            }
-        }
-
-        /**
-         * 重新绑定工具栏按钮事件
-         * 将原始工具栏的 onclick 属性转换为实际的点击事件
-         * @param {HTMLElement} toolbar - 工具栏元素
-         * @param {HTMLElement} targetElement - 目标编辑区域
-         */
-        function rebindToolbarButtons(toolbar, targetElement) {
-            // 绑定按钮事件
-            var buttons = toolbar.querySelectorAll('button');
-            buttons.forEach(function(btn) {
-                var onclick = btn.getAttribute('onclick');
-                if (onclick) {
-                    var match = onclick.match(/formatDoc\(['"]([^'"]+)['"]\)/);
-                    if (match) {
-                        var formatType = match[1];
-                        btn.onclick = function() {
-                            formatDoc(formatType, targetElement);
-                        };
-                    }
-                }
-            });
-            
-            // 绑定下拉框事件
-            var selects = toolbar.querySelectorAll('select');
-            selects.forEach(function(select) {
-                var onchange = select.getAttribute('onchange');
-                if (onchange) {
-                    var match = onchange.match(/formatDoc\(['"]([^'"]+)['"],\s*this\.value\)/);
-                    if (match) {
-                        var formatType = match[1];
-                        select.onchange = function() {
-                            var value = this.value;
-                            if (value) {
-                                formatDoc(formatType, value, targetElement);
-                            }
-                            this.value = '';
-                        };
-                    }
-                }
-            });
-        }
-
-        /**
-         * 打开面板全屏模式（通用）
-         * @param {string} panelId - 面板ID
-         * @param {string} title - 标题
-         */
-        function openFullscreen(panelId, title) {
-            var panel = document.getElementById(panelId);
-            if (!panel) return;
-            
-            // 创建全屏模态框
-            fullscreenModal = document.createElement('div');
-            fullscreenModal.className = 'fullscreen-modal';
-            fullscreenModal.id = 'fullscreenModal';
-            fullscreenModal.innerHTML = 
-                '<div class="fullscreen-content">' +
-                    '<div class="fullscreen-header">' +
-                        '<span>' + title + '</span>' +
-                        '<button class="fullscreen-close" onclick="closeFullscreen()">' +
-                            '<i class="fas fa-times"></i>' +
-                        '</button>' +
-                    '</div>' +
-                    '<div class="fullscreen-body">' + panel.innerHTML + '</div>' +
-                '</div>';
-            
-            // 显示模态框
-            document.body.appendChild(fullscreenModal);
-            fullscreenModal.addEventListener('click', function(e) {
-                if (e.target === fullscreenModal) closeFullscreen();
-            });
-            requestAnimationFrame(function() {
-                fullscreenModal.classList.add('active');
-            });
-        }
-
-        /**
-         * 关闭全屏模式（通用）
-         */
-        function closeFullscreen() {
-            var modal = document.getElementById('fullscreenModal');
-            if (modal) {
-                modal.classList.remove('active');
-                setTimeout(function() { modal.remove(); }, 300);
-            }
-        }
-
-        // 暴露全局函数供外部调用
-        window.openFullscreen = openFullscreen;
-        window.closeFullscreen = closeFullscreen;
-        window.openWorkflow2Fullscreen = openWorkflow2Fullscreen;
-        window.closeWorkflow2Fullscreen = closeWorkflow2Fullscreen;
-        window.openHistoryPanel = openHistoryPanel;
-        window.closeHistoryPanel = closeHistoryPanel;
-        window.exportRecord = exportRecord;
-        window.formatDoc = formatDoc;
-    </script>
+    <script src="public/js/modules/workspace.js"></script>
+    <script src="public/js/modules/sidebar.js?v=1.0.2"></script>
+    <script src="public/js/modules/studentArchive.js"></script>
+    <script src="public/js/modules/conversation.js"></script>
+    <script src="public/js/modules/app.js"></script>
 </body>
 </html>

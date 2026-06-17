@@ -1,0 +1,667 @@
+/**
+ * 侧边栏样式
+ * 单层审讯结构
+ */
+
+/* ============ 侧边栏容器 ============ */
+.sidebar {
+    width: 185px;
+    background: linear-gradient(180deg, #1a2640 0%, #141e35 100%);
+    color: #cfd8e3;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    border-right: 1px solid rgba(74, 144, 226, 0.12);
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 20;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+}
+
+/* ============ 侧边栏头部 ============ */
+.sidebar-header {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(74, 144, 226, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(26, 40, 72, 0.5);
+}
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.sidebar-logo {
+    font-size: 16px;
+    color: #6ca3ff;
+    flex-shrink: 0;
+}
+
+.sidebar-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.sidebar-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #e0e8f5;
+    letter-spacing: 1.2px;
+}
+
+.sidebar-subtitle {
+    font-size: 9px;
+    color: #7d8fa8;
+    letter-spacing: 0.6px;
+}
+
+/* ============ 侧边栏菜单 ============ */
+.sidebar-menu {
+    flex: 1;
+    padding: 4px 0;
+    overflow-y: auto;
+}
+
+.sidebar-menu::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar-menu::-webkit-scrollbar-thumb {
+    background: #2e4068;
+    border-radius: 2px;
+}
+
+.sidebar-menu::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* ============ 菜单区块 ============ */
+.menu-section {
+    margin-bottom: 1px;
+    padding: 3px 0;
+}
+
+/* ============ 菜单项基础样式 ============ */
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 7px 12px;
+    cursor: pointer;
+    color: #95a4bc;
+    font-size: 11.5px;
+    transition: background-color 0.15s, color 0.15s;
+    user-select: none;
+    position: relative;
+    gap: 8px;
+    margin: 1px 6px;
+    border-radius: 4px;
+}
+
+.menu-item:hover {
+    background: rgba(74, 144, 226, 0.14);
+    color: #e0e8f5;
+}
+
+.menu-item.active {
+    background: rgba(74, 144, 226, 0.22);
+    color: #ffffff;
+}
+
+/* ============ 一级菜单项（审讯/案件/分析） ============ */
+.menu-item-parent {
+    font-weight: 600;
+    font-size: 12px;
+    padding: 8px 12px;
+    letter-spacing: 1px;
+    color: #b8c5d9;
+    margin: 2px 6px;
+}
+
+.menu-item-parent:hover {
+    color: #ffffff;
+}
+
+.menu-item-parent.active {
+    background: rgba(91, 160, 255, 0.18);
+    color: #ffffff;
+}
+
+/* ============ 审讯子项 ============ */
+.menu-item-child {
+    padding: 6px 12px 6px 30px;
+    font-size: 10.5px;
+    color: #8a98b0;
+    margin: 0 10px;
+}
+
+.menu-item-child.active {
+    padding: 6px 12px 6px 30px;
+    background: rgba(91, 160, 255, 0.25);
+    color: #ffffff;
+}
+
+.menu-item-child:hover {
+    background: rgba(74, 144, 226, 0.12);
+    color: #e0e8f5;
+}
+
+/* ============ 菜单图标 ============ */
+.menu-icon {
+    font-size: 11px;
+    width: 14px;
+    text-align: center;
+    color: #5c6d88;
+    flex-shrink: 0;
+}
+
+.menu-item.active .menu-icon {
+    color: #7db4ff;
+}
+
+.menu-item-parent .menu-icon {
+    font-size: 11.5px;
+    color: #6e82a0;
+}
+
+.menu-item-parent.active .menu-icon {
+    color: #7db4ff;
+}
+
+/* ============ 子项圆点指示器 ============ */
+.menu-child-dot {
+    width: 4px;
+    height: 4px;
+    background: #7db4ff;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.menu-item-child:not(.active) .menu-child-dot {
+    background: #4a5a78;
+}
+
+/* ============ 菜单标签 ============ */
+.menu-label {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ============ 添加按钮 ============ */
+.menu-add-btn {
+    background: transparent;
+    border: 1px solid rgba(91, 160, 255, 0.3);
+    color: #8fa4c0;
+    cursor: pointer;
+    font-size: 9.5px;
+    padding: 1.5px 6px;
+    border-radius: 3px;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+.menu-add-btn:hover {
+    background: #5ba0ff;
+    border-color: #5ba0ff;
+    color: #ffffff;
+}
+
+/* ============ 删除按钮 ============ */
+.menu-delete-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 138, 138, 0.15);
+    color: #8fa4c0;
+    cursor: pointer;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    opacity: 0;
+    transition: opacity 0.15s, color 0.15s, background-color 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+}
+
+.menu-item:hover .menu-delete-btn {
+    opacity: 1;
+}
+
+.menu-delete-btn:hover {
+    background: rgba(224, 88, 88, 0.2);
+    border-color: rgba(224, 88, 88, 0.4);
+    color: #ff9a9a;
+}
+
+/* ============ 操作按钮组 ============ */
+.menu-actions {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* ============ 空提示 ============ */
+.menu-empty-hint {
+    padding: 8px 14px 10px 30px;
+    font-size: 9.5px;
+    color: #6e82a0;
+    font-style: italic;
+}
+
+/* ============ 重命名输入框 ============ */
+.menu-rename-input {
+    background: #0f1a30;
+    border: 1px solid #5ba0ff;
+    color: #ffffff;
+    font-size: 11px;
+    padding: 3px 6px;
+    border-radius: 3px;
+    outline: none;
+    width: 100%;
+    font-family: inherit;
+}
+
+/* =================================================================== */
+/* ============ 收起 / 展开状态（Figma 风格方形按钮） ================ */
+/* =================================================================== */
+
+/* ---------- 收起态整体容器 ---------- */
+.sidebar.collapsed {
+    width: 56px;
+}
+
+/* ---------- 展开态右上角方形收起按钮 ---------- */
+.sidebar-collapse-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: rgba(91, 160, 255, 0.06);
+    color: #cfd8e3;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    flex-shrink: 0;
+    transition: background-color 0.15s, color 0.15s, box-shadow 0.15s;
+    margin-left: auto;
+    box-shadow:
+        inset 0 0 0 1px rgba(91, 160, 255, 0.18),
+        0 0 0 1px rgba(91, 160, 255, 0.35);
+    position: relative;
+}
+
+.sidebar-collapse-btn:hover {
+    background: rgba(91, 160, 255, 0.14);
+    color: #ffffff;
+    box-shadow:
+        inset 0 0 0 1px rgba(91, 160, 255, 0.35),
+        0 0 0 1px #5ba0ff;
+}
+
+.sidebar-collapse-btn:active {
+    background: rgba(91, 160, 255, 0.2);
+    transform: translateY(1px);
+}
+
+/* 展开态不显示收起态头部区域 */
+.sidebar-header {
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.sidebar-collapsed-header {
+    display: none;
+}
+
+.sidebar-menu {
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-collapsed-menu {
+    display: none;
+}
+
+/* ---------- 进入收起态 ---------- */
+.sidebar.collapsed .sidebar-header {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-menu {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-collapsed-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(74, 144, 226, 0.2);
+    position: relative;
+    width: 100%;
+    height: 56px;
+    box-sizing: border-box;
+    gap: 0;
+}
+
+/* ---------- 收起态 logo 区域 ---------- */
+.collapsed-logo-area {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(91, 160, 255, 0.06);
+    color: #5ba0ff;
+    font-size: 14px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.15s;
+    box-shadow:
+        inset 0 0 0 1px rgba(91, 160, 255, 0.15),
+        0 0 0 1px rgba(91, 160, 255, 0.3);
+}
+
+/* ---------- 展开按钮（默认隐藏，hover 时出现） ---------- */
+.sidebar-expand-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: rgba(91, 160, 255, 0.08);
+    color: #cfd8e3;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s, background-color 0.15s, color 0.15s, box-shadow 0.15s;
+    box-shadow:
+        inset 0 0 0 1px rgba(91, 160, 255, 0.2),
+        0 0 0 1px rgba(91, 160, 255, 0.4);
+}
+
+.sidebar-expand-btn:hover {
+    background: rgba(91, 160, 255, 0.18);
+    color: #ffffff;
+    box-shadow:
+        inset 0 0 0 1px rgba(91, 160, 255, 0.4),
+        0 0 0 1px #5ba0ff;
+}
+
+.sidebar-expand-btn:active {
+    transform: translate(-50%, calc(-50% + 1px));
+}
+
+/* 鼠标悬停在收起态头部：隐藏 logo，显示展开按钮 */
+.sidebar.collapsed .sidebar-collapsed-header:hover .collapsed-logo-area {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.sidebar.collapsed .sidebar-collapsed-header:hover .sidebar-expand-btn {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ---------- 收起态方形图标按钮区 ---------- */
+.sidebar.collapsed .sidebar-collapsed-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 0;
+    gap: 4px;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: visible;
+}
+
+.sidebar.collapsed .sidebar-collapsed-menu::-webkit-scrollbar {
+    width: 3px;
+}
+
+.sidebar.collapsed .sidebar-collapsed-menu::-webkit-scrollbar-thumb {
+    background: #2e4068;
+    border-radius: 2px;
+}
+
+.sidebar.collapsed .sidebar-collapsed-menu::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.collapsed-section-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    padding: 4px 0;
+    position: relative;
+}
+
+.collapsed-section-group + .collapsed-section-group::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 22px;
+    height: 1px;
+    background: rgba(74, 144, 226, 0.18);
+}
+
+/* ---------- 单个方形按钮 ---------- */
+.collapsed-item {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    background: transparent;
+    color: #8fa4c0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    position: relative;
+    flex-shrink: 0;
+    transition: background-color 0.15s, color 0.15s, box-shadow 0.15s;
+    overflow: visible;
+    box-shadow:
+        inset 0 0 0 1px rgba(91, 160, 255, 0.08),
+        0 0 0 1px transparent;
+}
+
+.collapsed-item i {
+    font-size: 13px;
+}
+
+.collapsed-item:hover {
+    background: rgba(91, 160, 255, 0.08);
+    color: #ffffff;
+    box-shadow:
+        inset 0 0 0 1px rgba(91, 160, 255, 0.2),
+        0 0 0 1px rgba(91, 160, 255, 0.35);
+}
+
+.collapsed-item.active {
+    background: rgba(91, 160, 255, 0.16);
+    color: #ffffff;
+    box-shadow:
+        inset 0 0 0 1px rgba(91, 160, 255, 0.3),
+        0 0 0 1px rgba(91, 160, 255, 0.5);
+}
+
+.collapsed-item.active::before {
+    content: '';
+    position: absolute;
+    left: -3px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2px;
+    height: 18px;
+    border-radius: 0 2px 2px 0;
+    background: #5ba0ff;
+    box-shadow: 0 0 5px rgba(91, 160, 255, 0.4);
+}
+
+.collapsed-add {
+    color: #7a9cc8;
+}
+
+.collapsed-add:hover {
+    background: rgba(91, 160, 255, 0.12) !important;
+    color: #5ba0ff !important;
+    box-shadow:
+        inset 0 0 0 1px rgba(91, 160, 255, 0.2),
+        0 0 0 1px rgba(91, 160, 255, 0.4) !important;
+}
+
+/* ---------- Tooltip：灰底黑字小对话框 ---------- */
+.collapsed-tooltip {
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: #e8eaed;
+    color: #1f1f1f;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+    z-index: 100;
+    letter-spacing: 0.8px;
+    transition: opacity 0.04s ease-out;
+}
+
+.collapsed-tooltip::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-right: 4px solid #e8eaed;
+}
+
+.sidebar.collapsed .collapsed-item:hover .collapsed-tooltip,
+.sidebar.collapsed .collapsed-section-group .collapsed-item:hover .collapsed-tooltip {
+    opacity: 1 !important;
+}
+
+/* =================================================================== */
+/* ============ 返回首页按钮样式 ================ */
+/* =================================================================== */
+
+/* ---------- 展开态底部区域 ---------- */
+.sidebar-footer {
+    padding: 8px;
+    border-top: 1px solid rgba(74, 144, 226, 0.15);
+    background: rgba(26, 40, 72, 0.3);
+}
+
+/* ---------- 返回首页按钮 ---------- */
+.sidebar-back-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: rgba(91, 160, 255, 0.08);
+    border: 1px solid rgba(91, 160, 255, 0.2);
+    border-radius: 5px;
+    color: #95b8f5;
+    cursor: pointer;
+    font-size: 11px;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.sidebar-back-btn i {
+    font-size: 11px;
+}
+
+.sidebar-back-btn:hover {
+    background: rgba(91, 160, 255, 0.16);
+    color: #ffffff;
+    border-color: rgba(91, 160, 255, 0.4);
+}
+
+.sidebar-back-btn:active {
+    background: rgba(91, 160, 255, 0.22);
+    transform: translateY(1px);
+}
+
+/* ---------- 收起态底部按钮组 ---------- */
+.collapsed-bottom-group {
+    margin-top: auto;
+    padding-top: 8px;
+}
+
+.collapsed-bottom-group::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 22px;
+    height: 1px;
+    background: rgba(74, 144, 226, 0.18);
+}
+
+/* ---------- 收起态返回按钮 ---------- */
+.collapsed-back-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    background: rgba(91, 160, 255, 0.08);
+    color: #95b8f5;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    transition: background-color 0.15s, color 0.15s, box-shadow 0.15s;
+    box-shadow:
+        inset 0 0 0 1px rgba(91, 160, 255, 0.15),
+        0 0 0 1px rgba(91, 160, 255, 0.25);
+}
+
+.collapsed-back-btn:hover {
+    background: rgba(91, 160, 255, 0.18);
+    color: #ffffff;
+    box-shadow:
+        inset 0 0 0 1px rgba(91, 160, 255, 0.3),
+        0 0 0 1px rgba(91, 160, 255, 0.45);
+}
+
+.collapsed-back-btn:active {
+    background: rgba(91, 160, 255, 0.25);
+    transform: translateY(1px);
+}

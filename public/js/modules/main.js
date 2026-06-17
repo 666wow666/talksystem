@@ -5,12 +5,9 @@
 (function() {
     /**
      * 初始化应用
-     * 依次调用历史记录恢复、语音识别初始化等子模块
+     * 调用语音识别初始化
      */
     function init() {
-        if (window.HistoryModule && window.HistoryModule.restore) {
-            window.HistoryModule.restore();
-        }
         if (window.SpeechRecognitionModule) {
             window.SpeechRecognitionModule.init();
         }
@@ -64,16 +61,6 @@
         init: init,
         getBasicInfo: getBasicInfo,
         openBasicInfoModal: openBasicInfoModal
-    };
-
-    /**
-     * 清除历史记录（全局函数）
-     * 委托给HistoryModule处理
-     */
-    window.clearHistory = function() {
-        if (window.HistoryModule && window.HistoryModule.clear) {
-            window.HistoryModule.clear();
-        }
     };
 
     /**

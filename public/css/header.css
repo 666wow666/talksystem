@@ -177,3 +177,17 @@
     margin-top: 4px;
     font-weight: 500;
 }
+
+/* 完成按钮样式 */
+.header-action-complete {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.header-action-complete:hover {
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.header-action-complete i {
+    margin-right: 6px;
+}

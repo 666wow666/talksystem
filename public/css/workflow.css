@@ -1,3 +1,57 @@
+/**
+ * 工作流输出与标签页样式
+ */
+
+.workflow1-output {
+    background: linear-gradient(to bottom, #f8fafc, #ffffff);
+    border: 1px solid #e1e7ef;
+    border-radius: 5px;
+    padding: 10px;
+    min-height: 100px;
+    max-height: 220px;
+    overflow-y: auto;
+    font-size: 12px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.workflow1-output::-webkit-scrollbar {
+    width: 5px;
+}
+
+.workflow1-output::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+}
+
+.workflow1-output::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+/* ============ 网格与垂直布局 ============ */
+.workflow1-outputs-grid {
+    display: flex !important;
+    gap: 8px;
+    flex: 1;
+    min-height: 0;
+    flex-direction: row;
+    height: 100%;
+}
+
+.workflow-output-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border: 1px solid #e1e7ef;
+    border-radius: 5px;
+    overflow: hidden;
+    min-width: 0;
+    height: 100%;
+}
+
 .workflow1-output {
     background: linear-gradient(to bottom, #f8fafc, #fff);
     border: 2px solid #e2e8f0;
@@ -58,30 +112,38 @@
 }
 
 .workflow-output-simple {
-    background: linear-gradient(to bottom, #f8fafc, #fff);
-    border: 1px solid #e2e8f0;
-    border-radius: 4px;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-left: 3px solid #3b82f6;
+    border-radius: 5px;
     overflow: hidden;
-    height: 65px;
+    height: 55px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    padding: 6px 12px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s;
+}
+
+.workflow-output-simple:hover {
+    border-color: #9ca3af;
+    border-left-color: #2563eb;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
 }
 
 .workflow-output-simple .workflow-output-content {
-    padding: 8px 12px;
     overflow-y: auto;
-    font-size: 19px;
-    line-height: 1.5;
+    font-size: 13px;
+    line-height: 1.4;
     white-space: pre-wrap;
     word-break: break-word;
-    height: 100%;
+    width: 100%;
     box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
+    text-align: left;
+    color: #1f2937;
 }
 
 .workflow-output-item-row {
@@ -139,11 +201,9 @@
 }
 
 .workflow-output-content {
-    flex: 1;
-    padding: 8px;
-    overflow-y: auto;
-    font-size: 12px;
-    line-height: 1.6;
+    cursor: text;
+    font-size: 13px;
+    line-height: 1.4;
     white-space: pre-wrap;
     word-break: break-word;
 }
@@ -226,6 +286,70 @@
     display: block;
 }
 
+.workflow1-panel {
+    position: relative;
+}
+
+/* ============ 标签页 ============ */
+.workflow1-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 8px;
+    background: #f1f5f9;
+    padding: 3px;
+    border-radius: 5px;
+}
+
+.workflow1-tab {
+    flex: 1;
+    padding: 6px 10px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.workflow1-tab:hover {
+    color: #2d4473;
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.workflow1-tab.active {
+    background: #ffffff;
+    color: #1e40af;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.workflow1-tab .badge {
+    background: #1e40af;
+    color: white;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.workflow1-tab.active .badge {
+    background: #16a34a;
+}
+
+.workflow1-content {
+    display: none;
+}
+
+.workflow1-content.active {
+    display: block;
+}
+
+/* ============ 工作流面板 ============ */
 .workflow1-panel {
     position: relative;
 }
